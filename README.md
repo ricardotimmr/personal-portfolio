@@ -1,135 +1,68 @@
-# React + TypeScript + Vite Frame
+# Ricardo Timm – Portfolio
 
-A minimal, opinionated starter repository for building modern React applications with TypeScript and Vite.
+Personal portfolio website showcasing selected frontend and UX/UI projects.
 
-This repository is intended to be used as a **project frame**: clone or generate a new repository from it, rename it, and build on top without redoing basic setup each time.
-
----
-
-## Features
-
-* **React + TypeScript + Vite** for a fast development experience.
-* **ESLint (flat config) + Prettier** for code quality and consistent formatting.
-* **Path alias** `@/` → `src/` for cleaner imports.
-* **Environment variable** handling via `.env`.
-* **Scalable folder structure** designed for growth.
-* **Minimal starter components** to get you moving immediately.
-* **Project rename script** to quickly personalize new clones.
+The goal of this project is to present case studies, design thinking, and technical implementation in a clean, structured, and interactive format suitable for professional applications.
 
 ---
 
-## Getting Started
+## Overview
 
-### Use as a template (Recommended)
+This portfolio is designed to:
 
-1. Click **"Use this template"** on GitHub.
-2. Create a new repository from the template.
-3. Clone your new repository locally.
-4. Install dependencies:
+- Present selected projects with a clear problem–solution structure  
+- Highlight UX/UI thinking and frontend implementation skills  
+- Demonstrate interaction design and animation concepts  
+- Provide recruiters with a focused and accessible overview of my work  
 
-```bash
-npm install
-npm run dev
-
-```
-
-### Clone manually
-
-If you prefer to clone the repository directly:
-
-```bash
-git clone <repo-url> my-new-project
-cd my-new-project
-npm install
-
-```
-
-**Rename the project:**
-To update your `package.json` and project references automatically:
-
-```bash
-npm run rename -- my-new-project
-
-```
+The visual direction is minimal, structured, and typography-driven, with subtle interactive elements.
 
 ---
 
-## Scripts
+## Objectives
 
-| Script | Description |
-| --- | --- |
-| `npm run dev` | Start the development server |
-| `npm run build` | Type-check and build for production |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint to find code issues |
-| `npm run format` | Format code with Prettier |
-| `npm run rename -- <name>` | Rename the project (updates `package.json`) |
+- Create a clean and performance-oriented portfolio  
+- Integrate purposeful animations without compromising usability  
+- Structure projects as case studies rather than simple galleries  
+- Reflect my personal design and development philosophy  
 
 ---
 
-## Environment Variables
+## Design Principles
 
-This project uses Vite’s environment variable system. Create a `.env` file based on the provided example:
-
-```bash
-cp .env.example .env
-
-```
-
-> **Note:** All public variables must be prefixed with `VITE_` to be accessible in your application.
+- Clarity over decoration  
+- Strong typography and spacing  
+- Intentional motion  
+- Accessibility-first approach  
+- Responsive by default  
 
 ---
 
-## Path Aliases
+## Target Audience
 
-The alias `@/` points to the `src/` directory, allowing for cleaner imports regardless of file depth.
-
-**Example:**
-
-```ts
-import { Button } from '@/components/Button';
-import { useAuth } from '@/lib/hooks';
-
-```
+- Recruiters  
+- Hiring managers  
+- Design leads  
+- Technical leads  
 
 ---
 
-## Project Structure
+## Tech Stack (Planned)
 
-```text
-src/
-├── app/          # Application shell, providers, layout
-├── components/   # Reusable UI components
-├── lib/          # Utilities, hooks, and helpers
-├── styles/       # Global styles and themes
-└── types/        # Shared TypeScript types and interfaces
-
-```
+- React  
+- TypeScript  
+- Vite  
+- CSS / Tailwind (TBD)  
 
 ---
 
-## Formatting & Linting
+## Status
 
-* **ESLint** handles code quality and identifies common React/TypeScript issues.
-* **Prettier** is responsible for code formatting only.
-* Conflicting ESLint formatting rules are disabled via `eslint-config-prettier`.
-
-**Recommended Editor Setup:**
-
-* Enable **Format on Save**.
-* Install the **ESLint** and **Prettier** extensions (e.g., for VS Code).
+Currently in design and conceptual development phase.
 
 ---
 
-## Adding More Tooling
+## License
 
-This frame intentionally avoids locking in specific libraries to remain flexible. Add these as needed:
-
-* **Styling:** Tailwind CSS, CSS Modules, or Styled Components.
-* **Routing:** React Router or TanStack Router.
-* **State Management:** Zustand, Redux Toolkit, or Jotai.
-* **Testing:** Vitest and React Testing Library.
-
----
-
-Would you like me to help you write a configuration guide for any specific additions, like adding **Tailwind CSS** or **React Router** to this setup?
+This project is for personal portfolio use.  
+All projects and assets belong to their respective owners unless stated otherwise.
