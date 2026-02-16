@@ -1,4 +1,3 @@
-import { ChevronDown } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
 import {
   GALLERY_SCROLL_INERTIAL_LERP,
@@ -15,6 +14,13 @@ type GallerySlide = {
   imageSrc: string
 }
 
+type CardMetric = {
+  mediaElement: HTMLImageElement
+  center: number
+  halfWidth: number
+  lastShift: number
+}
+
 const horizontalModules = import.meta.glob('../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}', {
   eager: true,
   import: 'default',
@@ -25,18 +31,58 @@ const verticalModules = import.meta.glob('../assets/projects/vertical/*.{png,jpg
   import: 'default',
 }) as Record<string, string>
 
-const horizontalImages = Object.entries(horizontalModules)
-  .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-  .map(([, source]) => source)
+const optimizedHorizontalModules = import.meta.glob(
+  '../assets/projects-optimized/horizontal/*.{png,jpg,jpeg,webp,avif}',
+  {
+    eager: true,
+    import: 'default',
+  },
+) as Record<string, string>
 
-const verticalImages = Object.entries(verticalModules)
-  .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-  .map(([, source]) => source)
+const optimizedVerticalModules = import.meta.glob(
+  '../assets/projects-optimized/vertical/*.{png,jpg,jpeg,webp,avif}',
+  {
+    eager: true,
+    import: 'default',
+  },
+) as Record<string, string>
+
+function resolveImageSources(
+  originalModules: Record<string, string>,
+  optimizedModules: Record<string, string>,
+  optimizedBasePath: string,
+) {
+  return Object.entries(originalModules)
+    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
+    .map(([originalPath, originalSource]) => {
+      const fileName = originalPath.split('/').at(-1)
+      if (!fileName) {
+        return originalSource
+      }
+
+      const optimizedPath = `${optimizedBasePath}/${fileName}`
+      return optimizedModules[optimizedPath] ?? originalSource
+    })
+}
+
+const horizontalImages = resolveImageSources(
+  horizontalModules,
+  optimizedHorizontalModules,
+  '../assets/projects-optimized/horizontal',
+)
+
+const verticalImages = resolveImageSources(
+  verticalModules,
+  optimizedVerticalModules,
+  '../assets/projects-optimized/vertical',
+)
 
 const repeatedSetCount = 7
 const middleSetIndex = Math.floor(repeatedSetCount / 2)
 const textCloseDelayMs = 260
 const cardImageParallaxMaxShiftPx = 292
+const cardImageParallaxScale = 1.8
+const centerHitTestMinIntervalMs = 34
 
 type MarkerPhase = 'idle' | 'open' | 'closing'
 
@@ -94,12 +140,14 @@ function GallerySection() {
   const targetXRef = useRef(0)
   const animationFrameRef = useRef<number | null>(null)
   const closeTextTimeoutRef = useRef<number | null>(null)
+  const centerHitRafRef = useRef<number | null>(null)
   const pointerInsideRef = useRef(false)
   const pointerXRef = useRef(0)
   const pointerYRef = useRef(0)
   const isCenterHoveringRef = useRef(false)
   const lastCenterHitTestAtRef = useRef(0)
-  const cardElementsRef = useRef<HTMLElement[]>([])
+  const cardMetricsRef = useRef<CardMetric[]>([])
+  const viewportWidthRef = useRef(0)
 
   const [markerPhase, setMarkerPhase] = useState<MarkerPhase>('idle')
   const [isCenterHovering, setIsCenterHovering] = useState(false)
@@ -121,22 +169,46 @@ function GallerySection() {
 
   const updateCardParallax = () => {
     const viewport = viewportRef.current
-    const cards = cardElementsRef.current
-    if (!viewport || cards.length === 0) {
+    const cardMetrics = cardMetricsRef.current
+    if (!viewport || cardMetrics.length === 0) {
       return
     }
 
-    const viewportCenterInTrack = currentXRef.current + viewport.clientWidth / 2
-    const influenceRange = viewport.clientWidth * 0.64
+    const viewportWidth = viewportWidthRef.current || viewport.clientWidth
+    if (viewportWidth <= 0) {
+      return
+    }
 
-    cards.forEach((card) => {
-      const cardCenterInTrack = card.offsetLeft + card.offsetWidth / 2
-      const ratio = Math.max(
-        -1,
-        Math.min(1, (cardCenterInTrack - viewportCenterInTrack) / influenceRange),
-      )
-      const shift = -ratio * cardImageParallaxMaxShiftPx
-      card.style.setProperty('--media-shift-x', `${shift.toFixed(2)}px`)
+    const viewportStart = currentXRef.current
+    const viewportEnd = viewportStart + viewportWidth
+    const viewportCenterInTrack = currentXRef.current + viewportWidth / 2
+    const influenceRange = viewportWidth * 0.64
+
+    cardMetrics.forEach((metric) => {
+      const isFarOutsideViewport =
+        metric.center + metric.halfWidth < viewportStart - influenceRange ||
+        metric.center - metric.halfWidth > viewportEnd + influenceRange
+
+      const nextShift = (() => {
+        if (isFarOutsideViewport) {
+          return 0
+        }
+
+        const ratio = Math.max(
+          -1,
+          Math.min(1, (metric.center - viewportCenterInTrack) / influenceRange),
+        )
+        return -ratio * cardImageParallaxMaxShiftPx
+      })()
+
+      if (Math.abs(nextShift - metric.lastShift) < 0.35) {
+        return
+      }
+
+      metric.lastShift = nextShift
+      metric.mediaElement.style.transform = `translate3d(${nextShift.toFixed(
+        2,
+      )}px, 0, 0) scale(${cardImageParallaxScale})`
     })
   }
 
@@ -220,6 +292,24 @@ function GallerySection() {
     setCenterHovering(isPointerInsideCenteredCard)
   }
 
+  const requestCenterHitState = () => {
+    if (centerHitRafRef.current !== null) {
+      return
+    }
+
+    centerHitRafRef.current = window.requestAnimationFrame(() => {
+      centerHitRafRef.current = null
+
+      const now = performance.now()
+      if (now - lastCenterHitTestAtRef.current < centerHitTestMinIntervalMs) {
+        return
+      }
+
+      lastCenterHitTestAtRef.current = now
+      updateCenterHitState()
+    })
+  }
+
   const runAnimation = () => {
     const distance = targetXRef.current - currentXRef.current
 
@@ -239,11 +329,7 @@ function GallerySection() {
     updateCardParallax()
 
     if (pointerInsideRef.current) {
-      const now = performance.now()
-      if (now - lastCenterHitTestAtRef.current >= 50) {
-        lastCenterHitTestAtRef.current = now
-        updateCenterHitState()
-      }
+      requestCenterHitState()
     }
 
     animationFrameRef.current = window.requestAnimationFrame(runAnimation)
@@ -269,15 +355,32 @@ function GallerySection() {
         return
       }
 
-      cardElementsRef.current = Array.from(
+      viewportWidthRef.current = viewportRef.current?.clientWidth ?? window.innerWidth
+
+      cardMetricsRef.current = Array.from(
         (trackRef.current ?? firstSet).querySelectorAll<HTMLElement>('.gallery-card'),
       )
+        .map((element) => {
+          const mediaElement = element.querySelector<HTMLImageElement>('.gallery-card__image')
+          if (!mediaElement) {
+            return null
+          }
+
+          return {
+            mediaElement,
+            center: element.offsetLeft + element.offsetWidth / 2,
+            halfWidth: element.offsetWidth / 2,
+            lastShift: Number.NaN,
+          }
+        })
+        .filter((metric): metric is CardMetric => metric !== null)
+
       const middleStart = setWidthRef.current * middleSetIndex
       currentXRef.current = middleStart
       targetXRef.current = middleStart
       applyTrackTransform()
       updateCardParallax()
-      updateCenterHitState()
+      requestCenterHitState()
     }
 
     recalculateTrack()
@@ -291,6 +394,10 @@ function GallerySection() {
 
       if (animationFrameRef.current !== null) {
         window.cancelAnimationFrame(animationFrameRef.current)
+      }
+
+      if (centerHitRafRef.current !== null) {
+        window.cancelAnimationFrame(centerHitRafRef.current)
       }
 
       if (closeTextTimeoutRef.current !== null) {
@@ -343,11 +450,15 @@ function GallerySection() {
     pointerInsideRef.current = true
     pointerXRef.current = event.clientX
     pointerYRef.current = event.clientY
-    updateCenterHitState()
+    requestCenterHitState()
   }
 
   const handlePointerLeave = () => {
     pointerInsideRef.current = false
+    if (centerHitRafRef.current !== null) {
+      window.cancelAnimationFrame(centerHitRafRef.current)
+      centerHitRafRef.current = null
+    }
     setCenterHovering(false)
   }
 
@@ -376,7 +487,14 @@ function GallerySection() {
                   key={`${setIndex}-${slide.id}-${index}`}
                   className={`gallery-card gallery-card--${slide.orientation}`}
                 >
-                  <img src={slide.imageSrc} alt="" loading="eager" className="gallery-card__image" />
+                  <img
+                    src={slide.imageSrc}
+                    alt=""
+                    loading="eager"
+                    decoding="auto"
+                    draggable={false}
+                    className="gallery-card__image"
+                  />
                 </article>
               ))}
             </div>
@@ -394,11 +512,6 @@ function GallerySection() {
         </span>
       </div>
 
-      <div className="gallery-scroll-hint" aria-hidden="true">
-        <ChevronDown size={14} />
-        <span>MY EXPERTISE</span>
-        <ChevronDown size={14} />
-      </div>
     </section>
   )
 }

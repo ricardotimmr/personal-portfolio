@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "rename": "node scripts/rename-project.mjs"
+    "rename": "node scripts/rename-project.mjs",
+    "optimize:projects": "node scripts/optimize-project-images.mjs"
   },
   "dependencies": {
     "lenis": "^1.3.17",

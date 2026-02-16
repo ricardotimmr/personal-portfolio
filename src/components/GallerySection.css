@@ -66,9 +66,9 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transform: translate3d(var(--media-shift-x, 0px), 0, 0) scale(1.8);
+  transform: translate3d(0, 0, 0) scale(1.8);
   transform-origin: center;
-  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .gallery-center-action {
@@ -168,41 +168,5 @@
   100% {
     transform: translateY(-120%);
     opacity: 0;
-  }
-}
-
-.gallery-scroll-hint {
-  position: absolute;
-  bottom: clamp(20px, 2.222vw, 32px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: clamp(12px, 0.972vw, 14px);
-  font-weight: var(--font-weight-regular);
-  line-height: 1;
-  color: var(--color-black);
-  pointer-events: none;
-  z-index: 3;
-}
-
-.gallery-scroll-hint span,
-.gallery-scroll-hint svg {
-  animation: gallery-hint-bob 1.85s ease-in-out infinite;
-}
-
-.gallery-scroll-hint svg:last-child {
-  animation-delay: 130ms;
-}
-
-@keyframes gallery-hint-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
   }
 }
