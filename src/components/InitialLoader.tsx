@@ -9,7 +9,7 @@ type InitialLoaderProps = {
   onComplete: () => void
 }
 
-const LOADER_NAME = 'RICARDO TIMM'
+const LOADER_NAME = '[RICARDO TIMM]'
 const LOADING_BASE_DURATION_MS = 2500
 const LOADING_STUTTER_ONE_AT = 0.26
 const LOADING_STUTTER_ONE_MS = 220

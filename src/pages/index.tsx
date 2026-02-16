@@ -23,7 +23,7 @@ function IndexPage() {
       const scrolledInsideHero = window.scrollY - heroTop
       const progress = Math.min(1, Math.max(0, scrolledInsideHero / heroHeight))
 
-      const maxOffsetPx = 320
+      const maxOffsetPx = (window.innerHeight || 1) * 0.22
       const parallaxOffset = -progress * maxOffsetPx
       hero.style.setProperty('--hero-parallax-y', `${parallaxOffset.toFixed(2)}px`)
     }

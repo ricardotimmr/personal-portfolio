@@ -78,7 +78,7 @@ body {
 .section--hero::before {
   content: '';
   position: absolute;
-  inset: -22vh 0;
+  inset: -30vh 0;
   background-image: url('./assets/images/motion-blur-hero.png');
   background-position: center center;
   background-repeat: no-repeat;
