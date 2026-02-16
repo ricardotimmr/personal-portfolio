@@ -1,0 +1,3 @@
+export const SCROLL_WHEEL_DRAG_FACTOR = 0.34
+export const SCROLL_INERTIAL_LERP = 0.056
+export const SCROLL_MAX_WHEEL_DELTA = 220
