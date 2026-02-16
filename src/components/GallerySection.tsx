@@ -36,6 +36,7 @@ const verticalImages = Object.entries(verticalModules)
 const repeatedSetCount = 7
 const middleSetIndex = Math.floor(repeatedSetCount / 2)
 const textCloseDelayMs = 260
+const cardImageParallaxMaxShiftPx = 292
 
 type MarkerPhase = 'idle' | 'open' | 'closing'
 
@@ -98,6 +99,7 @@ function GallerySection() {
   const pointerYRef = useRef(0)
   const isCenterHoveringRef = useRef(false)
   const lastCenterHitTestAtRef = useRef(0)
+  const cardElementsRef = useRef<HTMLElement[]>([])
 
   const [markerPhase, setMarkerPhase] = useState<MarkerPhase>('idle')
   const [isCenterHovering, setIsCenterHovering] = useState(false)
@@ -115,6 +117,27 @@ function GallerySection() {
     }
 
     track.style.transform = `translate3d(${-currentXRef.current}px, 0, 0)`
+  }
+
+  const updateCardParallax = () => {
+    const viewport = viewportRef.current
+    const cards = cardElementsRef.current
+    if (!viewport || cards.length === 0) {
+      return
+    }
+
+    const viewportCenterInTrack = currentXRef.current + viewport.clientWidth / 2
+    const influenceRange = viewport.clientWidth * 0.64
+
+    cards.forEach((card) => {
+      const cardCenterInTrack = card.offsetLeft + card.offsetWidth / 2
+      const ratio = Math.max(
+        -1,
+        Math.min(1, (cardCenterInTrack - viewportCenterInTrack) / influenceRange),
+      )
+      const shift = -ratio * cardImageParallaxMaxShiftPx
+      card.style.setProperty('--media-shift-x', `${shift.toFixed(2)}px`)
+    })
   }
 
   const normalizeInfinitePosition = () => {
@@ -204,6 +227,7 @@ function GallerySection() {
       currentXRef.current = targetXRef.current
       normalizeInfinitePosition()
       applyTrackTransform()
+      updateCardParallax()
       updateCenterHitState()
       animationFrameRef.current = null
       return
@@ -212,6 +236,7 @@ function GallerySection() {
     currentXRef.current += distance * GALLERY_SCROLL_INERTIAL_LERP
     normalizeInfinitePosition()
     applyTrackTransform()
+    updateCardParallax()
 
     if (pointerInsideRef.current) {
       const now = performance.now()
@@ -244,10 +269,14 @@ function GallerySection() {
         return
       }
 
+      cardElementsRef.current = Array.from(
+        (trackRef.current ?? firstSet).querySelectorAll<HTMLElement>('.gallery-card'),
+      )
       const middleStart = setWidthRef.current * middleSetIndex
       currentXRef.current = middleStart
       targetXRef.current = middleStart
       applyTrackTransform()
+      updateCardParallax()
       updateCenterHitState()
     }
 
