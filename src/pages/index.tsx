@@ -36,7 +36,12 @@ function IndexPage() {
               </div>
 
               <Link className="expertise-cta" to="/info">
-                MY STORY
+                <span className="expertise-cta__swap">
+                  <span className="expertise-cta__primary">MY STORY</span>
+                  <span className="expertise-cta__secondary" aria-hidden="true">
+                    MY STORY
+                  </span>
+                </span>
               </Link>
             </div>
           </div>
