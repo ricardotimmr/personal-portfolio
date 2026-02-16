@@ -1,9 +1,9 @@
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
 import {
-  SCROLL_INERTIAL_LERP,
-  SCROLL_MAX_WHEEL_DELTA,
-  SCROLL_WHEEL_DRAG_FACTOR,
+  GALLERY_SCROLL_INERTIAL_LERP,
+  GALLERY_SCROLL_MAX_WHEEL_DELTA,
+  GALLERY_SCROLL_WHEEL_DRAG_FACTOR,
 } from './scrollPhysics'
 import './GallerySection.css'
 
@@ -97,6 +97,7 @@ function GallerySection() {
   const pointerXRef = useRef(0)
   const pointerYRef = useRef(0)
   const isCenterHoveringRef = useRef(false)
+  const lastCenterHitTestAtRef = useRef(0)
 
   const [markerPhase, setMarkerPhase] = useState<MarkerPhase>('idle')
   const [isCenterHovering, setIsCenterHovering] = useState(false)
@@ -208,10 +209,18 @@ function GallerySection() {
       return
     }
 
-    currentXRef.current += distance * SCROLL_INERTIAL_LERP
+    currentXRef.current += distance * GALLERY_SCROLL_INERTIAL_LERP
     normalizeInfinitePosition()
     applyTrackTransform()
-    updateCenterHitState()
+
+    if (pointerInsideRef.current) {
+      const now = performance.now()
+      if (now - lastCenterHitTestAtRef.current >= 50) {
+        lastCenterHitTestAtRef.current = now
+        updateCenterHitState()
+      }
+    }
+
     animationFrameRef.current = window.requestAnimationFrame(runAnimation)
   }
 
@@ -281,17 +290,23 @@ function GallerySection() {
       return
     }
 
+    const isHorizontalIntent =
+      Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.1 || event.shiftKey
+    if (!isHorizontalIntent) {
+      return
+    }
+
     event.preventDefault()
     event.stopPropagation()
 
     const dominantDelta =
-      Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY
+      Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY
     const clampedDelta = Math.max(
-      -SCROLL_MAX_WHEEL_DELTA,
-      Math.min(SCROLL_MAX_WHEEL_DELTA, dominantDelta),
+      -GALLERY_SCROLL_MAX_WHEEL_DELTA,
+      Math.min(GALLERY_SCROLL_MAX_WHEEL_DELTA, dominantDelta),
     )
 
-    targetXRef.current += clampedDelta * SCROLL_WHEEL_DRAG_FACTOR
+    targetXRef.current += clampedDelta * GALLERY_SCROLL_WHEEL_DRAG_FACTOR
     startAnimation()
   }
 

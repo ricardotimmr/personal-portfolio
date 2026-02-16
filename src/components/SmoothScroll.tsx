@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import {
-  SCROLL_INERTIAL_LERP,
-  SCROLL_MAX_WHEEL_DELTA,
-  SCROLL_WHEEL_DRAG_FACTOR,
+  PAGE_SCROLL_INERTIAL_LERP,
+  PAGE_SCROLL_MAX_WHEEL_DELTA,
+  PAGE_SCROLL_WHEEL_DRAG_FACTOR,
 } from './scrollPhysics'
 
 function SmoothScroll() {
@@ -35,7 +35,7 @@ function SmoothScroll() {
         return
       }
 
-      currentY += distance * SCROLL_INERTIAL_LERP
+      currentY += distance * PAGE_SCROLL_INERTIAL_LERP
       window.scrollTo(0, currentY)
       frameId = window.requestAnimationFrame(runAnimation)
     }
@@ -50,20 +50,27 @@ function SmoothScroll() {
 
     const onWheel = (event: WheelEvent) => {
       const target = event.target as HTMLElement | null
-      if (target?.closest?.('[data-gallery-scroll]') !== null || event.ctrlKey) {
+      const inGallery = target?.closest?.('[data-gallery-scroll]') !== null
+      const isHorizontalIntent =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.1 && Math.abs(event.deltaX) > 0.5
+
+      if (event.ctrlKey || (inGallery && isHorizontalIntent)) {
+        return
+      }
+
+      const verticalDelta = event.deltaY
+      if (Math.abs(verticalDelta) < 0.1) {
         return
       }
 
       event.preventDefault()
 
-      const dominantDelta =
-        Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY
       const clampedDelta = Math.max(
-        -SCROLL_MAX_WHEEL_DELTA,
-        Math.min(SCROLL_MAX_WHEEL_DELTA, dominantDelta),
+        -PAGE_SCROLL_MAX_WHEEL_DELTA,
+        Math.min(PAGE_SCROLL_MAX_WHEEL_DELTA, verticalDelta),
       )
 
-      targetY += clampedDelta * SCROLL_WHEEL_DRAG_FACTOR
+      targetY += clampedDelta * PAGE_SCROLL_WHEEL_DRAG_FACTOR
       clampTarget()
       startAnimation()
     }
