@@ -68,12 +68,24 @@ body {
 }
 
 .section--hero {
+  --hero-parallax-y: 0px;
+  position: relative;
   min-height: 200vh;
   min-height: 200svh;
+  overflow: hidden;
+}
+
+.section--hero::before {
+  content: '';
+  position: absolute;
+  inset: -22vh 0;
   background-image: url('./assets/images/motion-blur-hero.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
+  transform: translate3d(0, var(--hero-parallax-y), 0);
+  transform-origin: center;
+  will-change: transform;
 }
 
 .section--gallery,
@@ -442,4 +454,27 @@ body {
 .footer-link:hover .footer-link__icon,
 .footer-link:focus-visible .footer-link__icon {
   transform: rotate(-45deg);
+}
+
+.footer-scroll-top {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(18px, 2.222vw, 32px);
+  transform: translateX(-50%);
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-white);
+  cursor: pointer;
+  line-height: 0;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-scroll-top:hover,
+.footer-scroll-top:focus-visible {
+  transform: translateX(-50%) translateY(-4px);
 }

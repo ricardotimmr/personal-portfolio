@@ -1,12 +1,61 @@
-import { ArrowRight } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { ArrowRight, ArrowUp } from 'lucide-react'
 import GallerySection from '../components/GallerySection'
 import { Link } from 'react-router-dom'
 import personalPic from '../assets/images/personalpicSW.png'
 
 function IndexPage() {
+  const heroSectionRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    let rafId: number | null = null
+
+    const updateHeroParallax = () => {
+      rafId = null
+
+      const hero = heroSectionRef.current
+      if (!hero) {
+        return
+      }
+
+      const heroTop = hero.offsetTop
+      const heroHeight = hero.offsetHeight || 1
+      const scrolledInsideHero = window.scrollY - heroTop
+      const progress = Math.min(1, Math.max(0, scrolledInsideHero / heroHeight))
+
+      const maxOffsetPx = 320
+      const parallaxOffset = -progress * maxOffsetPx
+      hero.style.setProperty('--hero-parallax-y', `${parallaxOffset.toFixed(2)}px`)
+    }
+
+    const requestParallaxUpdate = () => {
+      if (rafId !== null) {
+        return
+      }
+
+      rafId = window.requestAnimationFrame(updateHeroParallax)
+    }
+
+    requestParallaxUpdate()
+    window.addEventListener('scroll', requestParallaxUpdate, { passive: true })
+    window.addEventListener('resize', requestParallaxUpdate)
+
+    return () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId)
+      }
+      window.removeEventListener('scroll', requestParallaxUpdate)
+      window.removeEventListener('resize', requestParallaxUpdate)
+    }
+  }, [])
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <main className="index-page">
-      <section className="index-section section--hero" />
+      <section ref={heroSectionRef} className="index-section section--hero" />
       <GallerySection />
       <section className="index-section section--expertise">
         <div className="expertise-layout">
@@ -118,6 +167,10 @@ function IndexPage() {
             </span>
             <ArrowRight className="footer-link__icon" size={32} />
           </a>
+
+          <button className="footer-scroll-top" type="button" onClick={handleScrollToTop} aria-label="Scroll to top">
+            <ArrowUp size={32} />
+          </button>
         </div>
       </footer>
     </main>
