@@ -62,7 +62,17 @@ body {
   background: var(--color-white);
 }
 
+.work-page {
+  width: 100%;
+  background: var(--color-white);
+}
+
 .index-section {
+  width: 100%;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-black) 12%, transparent);
+}
+
+.work-section {
   width: 100%;
   border-bottom: 1px solid color-mix(in srgb, var(--color-black) 12%, transparent);
 }
@@ -93,6 +103,164 @@ body {
 .section--footer {
   min-height: 100vh;
   min-height: 100svh;
+}
+
+.work-section--gallery {
+  --work-edge-frame: clamp(60px, 20.833vw, 300px);
+  --work-image-width: clamp(338px, 36.111vw, 520px);
+  --work-image-height: clamp(464px, 49.722vw, 715px);
+  --work-image-gap: clamp(36px, 6.944vw, 100px);
+  --work-columns-gap: clamp(24px, 3.333vw, 48px);
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--color-white);
+  padding: clamp(120px, 10.417vw, 150px) var(--work-edge-frame) clamp(80px, 8.333vw, 120px);
+}
+
+.work-gallery {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.833vw, 12px);
+}
+
+.work-project {
+  width: 100%;
+  display: grid;
+  grid-template-columns: var(--work-image-width) 1fr;
+  align-items: start;
+  column-gap: var(--work-image-gap);
+}
+
+.work-project__media {
+  margin: 0;
+  position: relative;
+  width: var(--work-image-width);
+  height: var(--work-image-height);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.work-project__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.work-project-action {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 2;
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.work-project-action__cluster {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.work-project-action__outer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 1.2px solid currentColor;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  transform-origin: center;
+  transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.work-project-action__inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: currentColor;
+  transform: translate(-50%, -50%) scale(0.15);
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease;
+  opacity: 0;
+}
+
+.work-project-action__text-wrap {
+  position: absolute;
+  left: calc(50% + 28px);
+  top: 50%;
+  transform: translateY(-50%);
+  overflow: hidden;
+  height: 14px;
+}
+
+.work-project-action__text {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
+}
+
+.work-project__media:hover .work-project-action__outer,
+.work-project__media:focus-within .work-project-action__outer {
+  transform: translate(-50%, -50%) rotate(90deg) scale(2);
+}
+
+.work-project__media:hover .work-project-action__inner,
+.work-project__media:focus-within .work-project-action__inner {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.work-project__media:hover .work-project-action__text,
+.work-project__media:focus-within .work-project-action__text {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
+.work-project__content {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(170px, 0.56fr);
+  column-gap: var(--work-columns-gap);
+  padding-top: clamp(2px, 0.278vw, 4px);
+}
+
+.work-project__block {
+  margin: 0;
+}
+
+.work-project__block--role {
+  justify-self: end;
+}
+
+.work-project__label {
+  margin: 0 0 clamp(10px, 0.833vw, 12px);
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 0.972vw, 14px);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  letter-spacing: 0.2em;
+  color: var(--color-black);
+}
+
+.work-project__copy {
+  margin: 0;
+  max-width: clamp(240px, 25vw, 360px);
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.694vw, 10px);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--color-black) 88%, transparent);
 }
 
 .section--expertise {
