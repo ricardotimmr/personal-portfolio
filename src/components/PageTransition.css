@@ -1,0 +1,79 @@
+.page-transition {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  background: var(--color-black);
+  --page-outgoing-duration: 1540ms;
+  --page-incoming-duration: 1040ms;
+  --page-incoming-delay: 120ms;
+}
+
+.page-transition__current {
+  position: relative;
+  z-index: 1;
+}
+
+.page-transition.is-transitioning .page-transition__current {
+  visibility: hidden;
+}
+
+.page-transition__outgoing-layer,
+.page-transition__incoming-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.page-transition__outgoing-layer {
+  z-index: 55;
+}
+
+.page-transition__incoming-layer {
+  z-index: 60;
+}
+
+.page-transition__outgoing-scroll {
+  min-height: 100svh;
+  will-change: transform;
+}
+
+.page-transition__outgoing-content {
+  transform-origin: center top;
+  animation: page-transition-outgoing-depth var(--page-outgoing-duration)
+    cubic-bezier(0.18, 0.72, 0.14, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.page-transition__incoming-content {
+  width: 100%;
+  min-height: 100svh;
+  background: var(--color-white);
+  transform: translate3d(0, 112%, 0) scale(1.012);
+  animation: page-transition-incoming-up var(--page-incoming-duration)
+    cubic-bezier(0.72, 0.01, 0.16, 1) var(--page-incoming-delay) forwards;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes page-transition-outgoing-depth {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 50px, 0) scale(0.92);
+    opacity: 0.94;
+  }
+}
+
+@keyframes page-transition-incoming-up {
+  0% {
+    transform: translate3d(0, 112%, 0) scale(1.012);
+  }
+  100% {
+    transform: translate3d(0, 0%, 0) scale(1);
+  }
+}
