@@ -6,7 +6,11 @@ import {
   PAGE_SCROLL_WHEEL_DRAG_FACTOR,
 } from './scrollPhysics'
 
-function SmoothScroll() {
+type SmoothScrollProps = {
+  deferRouteSync?: boolean
+}
+
+function SmoothScroll({ deferRouteSync = false }: SmoothScrollProps) {
   const frameIdRef = useRef<number | null>(null)
   const currentYRef = useRef(0)
   const targetYRef = useRef(0)
@@ -117,6 +121,10 @@ function SmoothScroll() {
   }, [])
 
   useEffect(() => {
+    if (deferRouteSync) {
+      return
+    }
+
     const previousKey = activeLocationKeyRef.current
     if (previousKey) {
       positionsRef.current.set(previousKey, window.scrollY)
@@ -149,7 +157,7 @@ function SmoothScroll() {
 
     activeLocationKeyRef.current = location.key
     positionsRef.current.set(location.key, window.scrollY)
-  }, [location.key, navigationType])
+  }, [deferRouteSync, location.key, navigationType])
 
   return null
 }

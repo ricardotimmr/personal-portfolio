@@ -1,0 +1,51 @@
+.page-transition {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  background: var(--color-black);
+}
+
+.page-transition__current {
+  position: relative;
+  z-index: 1;
+}
+
+.page-transition.is-transitioning .page-transition__current {
+  visibility: hidden;
+}
+
+.page-transition__outgoing-layer,
+.page-transition__incoming-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.page-transition__outgoing-layer {
+  z-index: 55;
+}
+
+.page-transition__incoming-layer {
+  z-index: 60;
+}
+
+.page-transition__outgoing-scroll {
+  min-height: 100svh;
+  will-change: transform;
+}
+
+.page-transition__outgoing-content {
+  transform-origin: center top;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.page-transition__incoming-content {
+  width: 100%;
+  min-height: 100svh;
+  background: var(--color-white);
+  will-change: transform;
+  backface-visibility: hidden;
+}

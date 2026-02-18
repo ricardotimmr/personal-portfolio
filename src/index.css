@@ -89,7 +89,7 @@ body {
   content: '';
   position: absolute;
   inset: -30vh 0;
-  background-image: url('./assets/images/motion-blur-hero.png');
+  background-image: url('./assets/images/motion-blur-hero-optimized.jpg');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -514,7 +514,7 @@ body {
   position: relative;
   min-height: calc(100vh - (var(--footer-frame) * 2));
   min-height: calc(100svh - (var(--footer-frame) * 2));
-  background-image: url('./assets/images/motion-blur-hero.png');
+  background-image: url('./assets/images/motion-blur-hero-optimized.jpg');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;

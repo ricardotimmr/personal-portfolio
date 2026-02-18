@@ -2,8 +2,5 @@
   position: relative;
   width: 100%;
   min-height: 100svh;
-}
-
-.app-shell__page {
-  opacity: 1;
+  background: var(--color-black);
 }

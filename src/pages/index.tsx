@@ -1,13 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import GallerySection from '../components/GallerySection'
 import SiteFooter from '../components/SiteFooter'
 import { Link } from 'react-router-dom'
-import personalPic from '../assets/images/personalpicSW.png'
+import personalPic from '../assets/images/personalpicSW-optimized.jpg'
 
 function IndexPage() {
   const heroSectionRef = useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let rafId: number | null = null
 
     const updateHeroParallax = () => {
@@ -18,10 +18,9 @@ function IndexPage() {
         return
       }
 
-      const heroTop = hero.offsetTop
-      const heroHeight = hero.offsetHeight || 1
-      const scrolledInsideHero = window.scrollY - heroTop
-      const progress = Math.min(1, Math.max(0, scrolledInsideHero / heroHeight))
+      const rect = hero.getBoundingClientRect()
+      const heroHeight = rect.height || 1
+      const progress = Math.min(1, Math.max(0, -rect.top / heroHeight))
 
       const maxOffsetPx = (window.innerHeight || 1) * 0.22
       const parallaxOffset = -progress * maxOffsetPx
