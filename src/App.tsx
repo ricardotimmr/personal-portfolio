@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Route, Routes, useLocation, type Location } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, type Location } from 'react-router-dom'
 import CursorTrail from './components/CursorTrail'
 import InitialLoader from './components/InitialLoader'
 import Navbar from './components/Navbar'
@@ -23,6 +23,7 @@ function AppRoutes({ routeLocation }: AppRoutesProps) {
       <Route path="/work" element={<WorkPage />} />
       <Route path="/freetime" element={<FreetimePage />} />
       <Route path="/info" element={<InfoPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
