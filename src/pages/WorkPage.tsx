@@ -1,4 +1,4 @@
-import SiteFooter from '../components/SiteFooter'
+import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
 
 type WorkProject = {
   id: string

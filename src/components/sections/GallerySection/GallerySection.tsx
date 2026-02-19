@@ -3,7 +3,7 @@ import {
   GALLERY_SCROLL_INERTIAL_LERP,
   GALLERY_SCROLL_MAX_WHEEL_DELTA,
   GALLERY_SCROLL_WHEEL_DRAG_FACTOR,
-} from './scrollPhysics'
+} from '../../navigation/SmoothScroll/scrollPhysics'
 import './GallerySection.css'
 
 type SlideOrientation = 'landscape' | 'portrait'
@@ -21,18 +21,24 @@ type CardMetric = {
   lastShift: number
 }
 
-const horizontalModules = import.meta.glob('../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}', {
+const horizontalModules = import.meta.glob(
+  '../../../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}',
+  {
   eager: true,
   import: 'default',
-}) as Record<string, string>
+  },
+) as Record<string, string>
 
-const verticalModules = import.meta.glob('../assets/projects/vertical/*.{png,jpg,jpeg,webp,avif}', {
+const verticalModules = import.meta.glob(
+  '../../../assets/projects/vertical/*.{png,jpg,jpeg,webp,avif}',
+  {
   eager: true,
   import: 'default',
-}) as Record<string, string>
+  },
+) as Record<string, string>
 
 const optimizedHorizontalModules = import.meta.glob(
-  '../assets/projects-optimized/horizontal/*.{png,jpg,jpeg,webp,avif}',
+  '../../../assets/projects-optimized/horizontal/*.{png,jpg,jpeg,webp,avif}',
   {
     eager: true,
     import: 'default',
@@ -40,7 +46,7 @@ const optimizedHorizontalModules = import.meta.glob(
 ) as Record<string, string>
 
 const optimizedVerticalModules = import.meta.glob(
-  '../assets/projects-optimized/vertical/*.{png,jpg,jpeg,webp,avif}',
+  '../../../assets/projects-optimized/vertical/*.{png,jpg,jpeg,webp,avif}',
   {
     eager: true,
     import: 'default',
@@ -68,13 +74,13 @@ function resolveImageSources(
 const horizontalImages = resolveImageSources(
   horizontalModules,
   optimizedHorizontalModules,
-  '../assets/projects-optimized/horizontal',
+  '../../../assets/projects-optimized/horizontal',
 )
 
 const verticalImages = resolveImageSources(
   verticalModules,
   optimizedVerticalModules,
-  '../assets/projects-optimized/vertical',
+  '../../../assets/projects-optimized/vertical',
 )
 
 const repeatedSetCount = 7
