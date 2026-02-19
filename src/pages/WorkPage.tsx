@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
+import './WorkPage.css'
 
 type WorkProject = {
   id: string

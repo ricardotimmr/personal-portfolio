@@ -1,5 +1,6 @@
 import { ArrowRight, ArrowUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import './SiteFooter.css'
 
 function SiteFooter() {
   const handleScrollToTop = () => {
@@ -7,7 +8,7 @@ function SiteFooter() {
   }
 
   return (
-    <footer className="index-section section--footer">
+    <footer className="footer-section section--footer">
       <div className="footer-panel">
         <Link className="footer-cta-link" to="/info">
           <span>ReADy</span>
