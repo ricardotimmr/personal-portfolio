@@ -97,9 +97,10 @@ const cardImageParallaxMaxShiftPx = 292
 const cardImageParallaxScale = 1.8
 const centerHitTestMinIntervalMs = 34
 const dragVelocitySmoothing = 0.24
-const dragReleaseMomentumMs = 320
+const dragReleaseMomentumMs = 460
 const dragReleaseMinVelocity = 0.025
-const dragReleaseMaxDistancePx = 980
+const dragReleaseMaxDistancePx = 1500
+const dragReleaseVelocityCap = 1.8
 const dragClickThresholdPx = 6
 const focusCenterInertialLerp = GALLERY_SCROLL_INERTIAL_LERP * 0.62
 
@@ -581,9 +582,13 @@ function GallerySection() {
     dragVelocityRef.current = 0
 
     if (Math.abs(releaseVelocity) >= dragReleaseMinVelocity) {
+      const cappedReleaseVelocity = Math.max(
+        -dragReleaseVelocityCap,
+        Math.min(dragReleaseVelocityCap, releaseVelocity),
+      )
       const momentumDistance = Math.max(
         -dragReleaseMaxDistancePx,
-        Math.min(dragReleaseMaxDistancePx, releaseVelocity * dragReleaseMomentumMs),
+        Math.min(dragReleaseMaxDistancePx, cappedReleaseVelocity * dragReleaseMomentumMs),
       )
 
       isFocusCenterAnimationRef.current = false
