@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import loadingBikeGif from '../assets/videos/loading-screen-bike.gif'
+import loadingBikeGif from '../../../assets/videos/loading-screen-bike.gif'
 import './InitialLoader.css'
 
 type LoaderPhase = 'loading' | 'bike-exit' | 'split-open'
