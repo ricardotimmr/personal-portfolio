@@ -100,6 +100,8 @@ const dragVelocitySmoothing = 0.24
 const dragReleaseMomentumMs = 320
 const dragReleaseMinVelocity = 0.025
 const dragReleaseMaxDistancePx = 980
+const dragClickThresholdPx = 6
+const focusCenterInertialLerp = GALLERY_SCROLL_INERTIAL_LERP * 0.62
 
 type MarkerPhase = 'idle' | 'open' | 'closing'
 
@@ -168,6 +170,8 @@ function GallerySection() {
   const dragLastClientXRef = useRef(0)
   const dragLastTimeRef = useRef(0)
   const dragVelocityRef = useRef(0)
+  const dragMovedRef = useRef(false)
+  const isFocusCenterAnimationRef = useRef(false)
   const isCenterHoveringRef = useRef(false)
   const lastCenterHitTestAtRef = useRef(0)
   const cardMetricsRef = useRef<CardMetric[]>([])
@@ -340,6 +344,7 @@ function GallerySection() {
 
     if (Math.abs(distance) <= 0.15) {
       currentXRef.current = targetXRef.current
+      isFocusCenterAnimationRef.current = false
       normalizeInfinitePosition()
       applyTrackTransform()
       updateCardParallax()
@@ -348,7 +353,10 @@ function GallerySection() {
       return
     }
 
-    currentXRef.current += distance * GALLERY_SCROLL_INERTIAL_LERP
+    const inertialLerp = isFocusCenterAnimationRef.current
+      ? focusCenterInertialLerp
+      : GALLERY_SCROLL_INERTIAL_LERP
+    currentXRef.current += distance * inertialLerp
     normalizeInfinitePosition()
     applyTrackTransform()
     updateCardParallax()
@@ -366,6 +374,18 @@ function GallerySection() {
     }
 
     animationFrameRef.current = window.requestAnimationFrame(runAnimation)
+  }
+
+  const focusCardToCenter = (cardElement: HTMLElement) => {
+    const viewport = viewportRef.current
+    if (!viewport) {
+      return
+    }
+
+    const nextTargetX = cardElement.offsetLeft + cardElement.offsetWidth / 2 - viewport.clientWidth / 2
+    isFocusCenterAnimationRef.current = true
+    targetXRef.current = nextTargetX
+    startAnimation()
   }
 
   useEffect(() => {
@@ -428,6 +448,7 @@ function GallerySection() {
       if (closeTextTimeoutRef.current !== null) {
         window.clearTimeout(closeTextTimeoutRef.current)
       }
+
     }
     // requestCenterHitState depends on mutable refs and should not trigger effect recreation.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -461,6 +482,7 @@ function GallerySection() {
 
     event.preventDefault()
     event.stopPropagation()
+    isFocusCenterAnimationRef.current = false
 
     const dominantDelta =
       Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY
@@ -495,6 +517,8 @@ function GallerySection() {
     dragLastClientXRef.current = event.clientX
     dragLastTimeRef.current = performance.now()
     dragVelocityRef.current = 0
+    dragMovedRef.current = false
+    isFocusCenterAnimationRef.current = false
 
     if (animationFrameRef.current !== null) {
       window.cancelAnimationFrame(animationFrameRef.current)
@@ -522,6 +546,9 @@ function GallerySection() {
       dragLastTimeRef.current = now
 
       const dragDeltaX = event.clientX - dragStartClientXRef.current
+      if (Math.abs(dragDeltaX) >= dragClickThresholdPx) {
+        dragMovedRef.current = true
+      }
       const nextX = dragStartTrackXRef.current - dragDeltaX
 
       currentXRef.current = nextX
@@ -559,8 +586,19 @@ function GallerySection() {
         Math.min(dragReleaseMaxDistancePx, releaseVelocity * dragReleaseMomentumMs),
       )
 
+      isFocusCenterAnimationRef.current = false
       targetXRef.current = currentXRef.current + momentumDistance
       startAnimation()
+    }
+
+    if (!dragMovedRef.current) {
+      const releasedCard = document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest('.gallery-card') as HTMLElement | null
+
+      if (releasedCard) {
+        focusCardToCenter(releasedCard)
+      }
     }
 
     requestCenterHitState()
@@ -575,6 +613,7 @@ function GallerySection() {
     isDraggingRef.current = false
     setIsDragging(false)
     dragVelocityRef.current = 0
+    dragMovedRef.current = false
     setCenterHovering(false)
   }
 
