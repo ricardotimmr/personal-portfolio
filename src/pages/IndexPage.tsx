@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
 import GallerySection from '../components/sections/GallerySection/GallerySection'
 import personalPic from '../assets/images/personalpicSW-optimized.jpg'
+import './IndexPage.css'
 
 function IndexPage() {
   const heroSectionRef = useRef<HTMLElement | null>(null)
