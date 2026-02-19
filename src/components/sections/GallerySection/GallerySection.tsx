@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent,
+} from 'react'
 import {
   GALLERY_SCROLL_INERTIAL_LERP,
   GALLERY_SCROLL_MAX_WHEEL_DELTA,
@@ -89,6 +96,10 @@ const textCloseDelayMs = 260
 const cardImageParallaxMaxShiftPx = 292
 const cardImageParallaxScale = 1.8
 const centerHitTestMinIntervalMs = 34
+const dragVelocitySmoothing = 0.24
+const dragReleaseMomentumMs = 320
+const dragReleaseMinVelocity = 0.025
+const dragReleaseMaxDistancePx = 980
 
 type MarkerPhase = 'idle' | 'open' | 'closing'
 
@@ -150,6 +161,13 @@ function GallerySection() {
   const pointerInsideRef = useRef(false)
   const pointerXRef = useRef(0)
   const pointerYRef = useRef(0)
+  const activePointerIdRef = useRef<number | null>(null)
+  const isDraggingRef = useRef(false)
+  const dragStartClientXRef = useRef(0)
+  const dragStartTrackXRef = useRef(0)
+  const dragLastClientXRef = useRef(0)
+  const dragLastTimeRef = useRef(0)
+  const dragVelocityRef = useRef(0)
   const isCenterHoveringRef = useRef(false)
   const lastCenterHitTestAtRef = useRef(0)
   const cardMetricsRef = useRef<CardMetric[]>([])
@@ -157,6 +175,7 @@ function GallerySection() {
 
   const [markerPhase, setMarkerPhase] = useState<MarkerPhase>('idle')
   const [isCenterHovering, setIsCenterHovering] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   const gallerySlides = useMemo(() => buildSlides(), [])
   const uniqueImageSources = useMemo(
@@ -410,6 +429,8 @@ function GallerySection() {
         window.clearTimeout(closeTextTimeoutRef.current)
       }
     }
+    // requestCenterHitState depends on mutable refs and should not trigger effect recreation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gallerySlides.length])
 
   useEffect(() => {
@@ -443,6 +464,7 @@ function GallerySection() {
 
     const dominantDelta =
       Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY
+
     const clampedDelta = Math.max(
       -GALLERY_SCROLL_MAX_WHEEL_DELTA,
       Math.min(GALLERY_SCROLL_MAX_WHEEL_DELTA, dominantDelta),
@@ -452,14 +474,115 @@ function GallerySection() {
     startAnimation()
   }
 
-  const handlePointerMove = (event: MouseEvent<HTMLDivElement>) => {
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) {
+      return
+    }
+
+    const viewport = viewportRef.current
+    if (!viewport) {
+      return
+    }
+
+    activePointerIdRef.current = event.pointerId
+    isDraggingRef.current = true
+    setIsDragging(true)
     pointerInsideRef.current = true
     pointerXRef.current = event.clientX
     pointerYRef.current = event.clientY
+    dragStartClientXRef.current = event.clientX
+    dragStartTrackXRef.current = targetXRef.current
+    dragLastClientXRef.current = event.clientX
+    dragLastTimeRef.current = performance.now()
+    dragVelocityRef.current = 0
+
+    if (animationFrameRef.current !== null) {
+      window.cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+
+    viewport.setPointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    pointerInsideRef.current = true
+    pointerXRef.current = event.clientX
+    pointerYRef.current = event.clientY
+
+    if (isDraggingRef.current && activePointerIdRef.current === event.pointerId) {
+      const now = performance.now()
+      const elapsedMs = Math.max(1, now - dragLastTimeRef.current)
+      const pointerDeltaX = event.clientX - dragLastClientXRef.current
+      const instantaneousTrackVelocity = -pointerDeltaX / elapsedMs
+
+      dragVelocityRef.current +=
+        (instantaneousTrackVelocity - dragVelocityRef.current) * dragVelocitySmoothing
+      dragLastClientXRef.current = event.clientX
+      dragLastTimeRef.current = now
+
+      const dragDeltaX = event.clientX - dragStartClientXRef.current
+      const nextX = dragStartTrackXRef.current - dragDeltaX
+
+      currentXRef.current = nextX
+      targetXRef.current = nextX
+      normalizeInfinitePosition()
+      applyTrackTransform()
+      updateCardParallax()
+      requestCenterHitState()
+      event.preventDefault()
+      return
+    }
+
     requestCenterHitState()
   }
 
+  const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (activePointerIdRef.current !== event.pointerId) {
+      return
+    }
+
+    const viewport = viewportRef.current
+    if (viewport?.hasPointerCapture(event.pointerId)) {
+      viewport.releasePointerCapture(event.pointerId)
+    }
+
+    activePointerIdRef.current = null
+    isDraggingRef.current = false
+    setIsDragging(false)
+    const releaseVelocity = dragVelocityRef.current
+    dragVelocityRef.current = 0
+
+    if (Math.abs(releaseVelocity) >= dragReleaseMinVelocity) {
+      const momentumDistance = Math.max(
+        -dragReleaseMaxDistancePx,
+        Math.min(dragReleaseMaxDistancePx, releaseVelocity * dragReleaseMomentumMs),
+      )
+
+      targetXRef.current = currentXRef.current + momentumDistance
+      startAnimation()
+    }
+
+    requestCenterHitState()
+  }
+
+  const handlePointerCancel = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (activePointerIdRef.current !== event.pointerId) {
+      return
+    }
+
+    activePointerIdRef.current = null
+    isDraggingRef.current = false
+    setIsDragging(false)
+    dragVelocityRef.current = 0
+    setCenterHovering(false)
+  }
+
   const handlePointerLeave = () => {
+    if (isDraggingRef.current) {
+      return
+    }
+
     pointerInsideRef.current = false
     if (centerHitRafRef.current !== null) {
       window.cancelAnimationFrame(centerHitRafRef.current)
@@ -473,11 +596,16 @@ function GallerySection() {
       <p className="gallery-title">[THE GALLERY]</p>
 
       <div
-        className={`gallery-slider-viewport ${isCenterHovering ? 'is-active-card' : ''}`}
+        className={`gallery-slider-viewport ${isCenterHovering ? 'is-active-card' : ''} ${
+          isDragging ? 'is-dragging' : ''
+        }`}
         ref={viewportRef}
         onWheel={handleWheel}
-        onMouseMove={handlePointerMove}
-        onMouseLeave={handlePointerLeave}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        onPointerLeave={handlePointerLeave}
         data-gallery-scroll
       >
         <div className="gallery-slider-track" ref={trackRef}>

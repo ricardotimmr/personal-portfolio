@@ -61,6 +61,10 @@ function SmoothScroll({ deferRouteSync = false }: SmoothScrollProps) {
     }
 
     const onWheel = (event: WheelEvent) => {
+      if (event.defaultPrevented || (event as WheelEvent & { __galleryWheelHandled?: boolean }).__galleryWheelHandled) {
+        return
+      }
+
       const target = event.target as HTMLElement | null
       const inGallery = target?.closest?.('[data-gallery-scroll]') !== null
       const isHorizontalIntent =

@@ -24,13 +24,17 @@
 .gallery-slider-viewport {
   width: 100vw;
   overflow: hidden;
-  cursor: auto;
+  cursor: grab;
   overscroll-behavior-x: contain;
   touch-action: pan-y;
 }
 
 .gallery-slider-viewport.is-active-card {
   cursor: pointer;
+}
+
+.gallery-slider-viewport.is-dragging {
+  cursor: grabbing;
 }
 
 .gallery-slider-track {
