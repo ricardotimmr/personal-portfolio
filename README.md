@@ -47,12 +47,12 @@ The visual direction is minimal, structured, and typography-driven, with subtle 
 
 ---
 
-## Tech Stack (Planned)
+## Tech Stack
 
 - React  
 - TypeScript  
 - Vite  
-- CSS / Tailwind (TBD)  
+- CSS
 
 ---
 
