@@ -153,6 +153,52 @@
   animation: gallery-open-text-out 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+.gallery-drag-hint {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(24px, 2.5vw, 36px);
+  transform: translateX(-50%);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(6px, 0.556vw, 8px);
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.694vw, 10px);
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-accent-green) 74%, transparent);
+  opacity: 0.66;
+  pointer-events: none;
+  z-index: 3;
+  animation: gallery-drag-hint-float 2200ms ease-in-out infinite;
+  transition: opacity 180ms ease;
+}
+
+.gallery-drag-hint.is-hidden {
+  opacity: 0;
+}
+
+.gallery-drag-hint__chevron {
+  font-size: clamp(11px, 0.833vw, 12px);
+  line-height: 1;
+}
+
+.gallery-drag-hint__text {
+  white-space: nowrap;
+}
+
+@keyframes gallery-drag-hint-float {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-2px);
+  }
+}
+
 @keyframes gallery-open-text-in {
   0% {
     transform: translateY(120%);
