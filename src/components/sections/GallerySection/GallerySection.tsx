@@ -692,7 +692,7 @@ function GallerySection() {
 
       <p className={`gallery-drag-hint ${isDragging ? 'is-hidden' : ''}`} aria-hidden="true">
         <span className="gallery-drag-hint__chevron">‹</span>
-        <span className="gallery-drag-hint__text">DRAG/CLICK TO NAVIGATE</span>
+        <span className="gallery-drag-hint__text">DRAG/CLICK/SCROLL TO NAVIGATE</span>
         <span className="gallery-drag-hint__chevron">›</span>
       </p>
 

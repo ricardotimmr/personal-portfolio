@@ -71,6 +71,11 @@
 
 .site-navbar__year {
   justify-self: end;
+  pointer-events: auto;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
 }
 
 .nav-menu-link {
@@ -114,4 +119,60 @@
 .nav-text-swap:hover .nav-text-swap__secondary,
 .nav-text-swap:focus-visible .nav-text-swap__secondary {
   transform: translateY(0%);
+}
+
+.site-year-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 6vw, 96px);
+  background: rgba(248, 249, 249, 0.8);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0ms linear 480ms;
+}
+
+.site-year-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-year-overlay__panel {
+  width: min(100%, 560px);
+  color: var(--color-black);
+  text-align: left;
+  transform: translateY(24px);
+  opacity: 0;
+  transition:
+    transform 560ms cubic-bezier(0.19, 1, 0.22, 1),
+    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-year-overlay.is-open .site-year-overlay__panel {
+  transform: translateY(-80px);
+  opacity: 1;
+}
+
+.site-year-overlay__title {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 0.972vw, 14px);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.site-year-overlay__text {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.694vw, 10px);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.7;
+  letter-spacing: 0.01em;
 }
