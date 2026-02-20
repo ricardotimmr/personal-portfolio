@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
+import { PROJECTS, type ProjectRecord } from '../data/projects'
 import './WorkPage.css'
-
-type WorkProject = {
-  id: string
-  imageSrc: string
-  description: string
-  roles: string[]
-}
 
 type PanelTransitionState = {
   fromIndex: number
@@ -16,129 +11,10 @@ type PanelTransitionState = {
   direction: 1 | -1
 }
 
-const horizontalModules = import.meta.glob('../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>
-
-const verticalModules = import.meta.glob('../assets/projects/vertical/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>
-
-const optimizedHorizontalModules = import.meta.glob(
-  '../assets/projects-optimized/horizontal/*.{png,jpg,jpeg,webp,avif}',
-  {
-    eager: true,
-    import: 'default',
-  },
-) as Record<string, string>
-
-const optimizedVerticalModules = import.meta.glob(
-  '../assets/projects-optimized/vertical/*.{png,jpg,jpeg,webp,avif}',
-  {
-    eager: true,
-    import: 'default',
-  },
-) as Record<string, string>
-
-function resolveImageSources(
-  originalModules: Record<string, string>,
-  optimizedModules: Record<string, string>,
-  optimizedBasePath: string,
-) {
-  return Object.entries(originalModules)
-    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-    .map(([originalPath, originalSource]) => {
-      const fileName = originalPath.split('/').at(-1)
-      if (!fileName) {
-        return originalSource
-      }
-
-      const optimizedPath = `${optimizedBasePath}/${fileName}`
-      return optimizedModules[optimizedPath] ?? originalSource
-    })
-}
-
-const horizontalImages = resolveImageSources(
-  horizontalModules,
-  optimizedHorizontalModules,
-  '../assets/projects-optimized/horizontal',
-)
-
-const verticalImages = resolveImageSources(
-  verticalModules,
-  optimizedVerticalModules,
-  '../assets/projects-optimized/vertical',
-)
-
-const PROJECT_ROLES = [
-  ['Frontend Developer', 'UI Designer'],
-  ['Product Designer', 'Frontend Developer'],
-  ['Interaction Designer', 'UI Engineer'],
-  ['Frontend Developer', 'Design Systems'],
-  ['UX Designer', 'Frontend Developer'],
-  ['Design Engineer', 'Interaction Designer'],
-  ['UI Designer', 'Motion Designer'],
-  ['Frontend Engineer', 'Accessibility Lead'],
-]
 const PANEL_TRANSITION_BAND_PX = 120
 
-function createProjectCopy(index: number) {
-  const projectNumber = String(index + 1).padStart(2, '0')
-
-  return `Project ${projectNumber} balances visual restraint, clear interaction pacing, and reliable implementation for polished, high-quality digital product experiences.`
-}
-
-function createProjectRoles(index: number) {
-  const roles = PROJECT_ROLES[index % PROJECT_ROLES.length]
-  return roles
-}
-
-function buildWorkProjects(): WorkProject[] {
-  const hasHorizontal = horizontalImages.length > 0
-  const hasVertical = verticalImages.length > 0
-
-  if (!hasHorizontal && !hasVertical) {
-    return []
-  }
-
-  if (!hasHorizontal) {
-    return verticalImages.map((imageSrc, index) => ({
-      id: `v-${index}`,
-      imageSrc,
-      description: createProjectCopy(index),
-      roles: createProjectRoles(index),
-    }))
-  }
-
-  if (!hasVertical) {
-    return horizontalImages.map((imageSrc, index) => ({
-      id: `h-${index}`,
-      imageSrc,
-      description: createProjectCopy(index),
-      roles: createProjectRoles(index),
-    }))
-  }
-
-  const projectCount = horizontalImages.length + verticalImages.length
-  return Array.from({ length: projectCount }, (_, index) => {
-    const prefersHorizontal = index % 2 === 0
-    const imageSrc = prefersHorizontal
-      ? horizontalImages[(index / 2) % horizontalImages.length]
-      : verticalImages[Math.floor(index / 2) % verticalImages.length]
-
-    return {
-      id: `project-${index}`,
-      imageSrc,
-      description: createProjectCopy(index),
-      roles: createProjectRoles(index),
-    }
-  })
-}
-
 type WorkProjectPanelContentProps = {
-  project: WorkProject
+  project: ProjectRecord
 }
 
 function WorkProjectPanelContent({ project }: WorkProjectPanelContentProps) {
@@ -167,7 +43,7 @@ function WorkProjectPanelContent({ project }: WorkProjectPanelContentProps) {
 }
 
 function WorkPage() {
-  const projects = useMemo(() => buildWorkProjects(), [])
+  const projects = useMemo(() => PROJECTS, [])
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [isPanelFadedOut, setIsPanelFadedOut] = useState(false)
   const [panelTransition, setPanelTransition] = useState<PanelTransitionState | null>(null)
@@ -198,13 +74,7 @@ function WorkPage() {
     }
 
     const mediaElements = Array.from(section.querySelectorAll<HTMLElement>('.work-project__media'))
-    if (mediaElements.length === 0) {
-      setIsPanelFadedOut(false)
-      setPanelTransition(null)
-      return
-    }
-
-    if (projects.length === 0) {
+    if (mediaElements.length === 0 || projects.length === 0) {
       setIsPanelFadedOut(false)
       setPanelTransition(null)
       return
@@ -297,9 +167,7 @@ function WorkPage() {
       return nextPanelTransition
     })
 
-    setActiveProjectIndex((previousIndex) =>
-      previousIndex === nextIndex ? previousIndex : nextIndex,
-    )
+    setActiveProjectIndex((previousIndex) => (previousIndex === nextIndex ? previousIndex : nextIndex))
   }, [projects.length])
 
   useEffect(() => {
@@ -342,7 +210,11 @@ function WorkPage() {
           <div className="work-gallery">
             {projects.map((project) => (
               <article key={project.id} className="work-project">
-                <figure className="work-project__media">
+                <Link
+                  className="work-project__media"
+                  to={`/work/${project.slug}`}
+                  aria-label={`Open ${project.title}`}
+                >
                   <img
                     className="work-project__image"
                     src={project.imageSrc}
@@ -359,7 +231,7 @@ function WorkPage() {
                       <span className="work-project-action__text">OPEN PROJECT</span>
                     </span>
                   </div>
-                </figure>
+                </Link>
               </article>
             ))}
           </div>
