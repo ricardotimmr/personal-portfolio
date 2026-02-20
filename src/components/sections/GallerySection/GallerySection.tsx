@@ -6,11 +6,13 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent,
 } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   GALLERY_SCROLL_INERTIAL_LERP,
   GALLERY_SCROLL_MAX_WHEEL_DELTA,
   GALLERY_SCROLL_WHEEL_DRAG_FACTOR,
 } from '../../navigation/SmoothScroll/scrollPhysics'
+import { PROJECTS } from '../../../data/projects'
 import './GallerySection.css'
 
 type SlideOrientation = 'landscape' | 'portrait'
@@ -19,6 +21,7 @@ type GallerySlide = {
   id: string
   orientation: SlideOrientation
   imageSrc: string
+  slug: string
 }
 
 type CardMetric = {
@@ -27,68 +30,6 @@ type CardMetric = {
   halfWidth: number
   lastShift: number
 }
-
-const horizontalModules = import.meta.glob(
-  '../../../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}',
-  {
-  eager: true,
-  import: 'default',
-  },
-) as Record<string, string>
-
-const verticalModules = import.meta.glob(
-  '../../../assets/projects/vertical/*.{png,jpg,jpeg,webp,avif}',
-  {
-  eager: true,
-  import: 'default',
-  },
-) as Record<string, string>
-
-const optimizedHorizontalModules = import.meta.glob(
-  '../../../assets/projects-optimized/horizontal/*.{png,jpg,jpeg,webp,avif}',
-  {
-    eager: true,
-    import: 'default',
-  },
-) as Record<string, string>
-
-const optimizedVerticalModules = import.meta.glob(
-  '../../../assets/projects-optimized/vertical/*.{png,jpg,jpeg,webp,avif}',
-  {
-    eager: true,
-    import: 'default',
-  },
-) as Record<string, string>
-
-function resolveImageSources(
-  originalModules: Record<string, string>,
-  optimizedModules: Record<string, string>,
-  optimizedBasePath: string,
-) {
-  return Object.entries(originalModules)
-    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-    .map(([originalPath, originalSource]) => {
-      const fileName = originalPath.split('/').at(-1)
-      if (!fileName) {
-        return originalSource
-      }
-
-      const optimizedPath = `${optimizedBasePath}/${fileName}`
-      return optimizedModules[optimizedPath] ?? originalSource
-    })
-}
-
-const horizontalImages = resolveImageSources(
-  horizontalModules,
-  optimizedHorizontalModules,
-  '../../../assets/projects-optimized/horizontal',
-)
-
-const verticalImages = resolveImageSources(
-  verticalModules,
-  optimizedVerticalModules,
-  '../../../assets/projects-optimized/vertical',
-)
 
 const repeatedSetCount = 7
 const middleSetIndex = Math.floor(repeatedSetCount / 2)
@@ -103,55 +44,21 @@ const dragReleaseMaxDistancePx = 1500
 const dragReleaseVelocityCap = 1.8
 const dragClickThresholdPx = 6
 const focusCenterInertialLerp = GALLERY_SCROLL_INERTIAL_LERP * 0.62
+let persistedGalleryTrackX: number | null = null
 
 type MarkerPhase = 'idle' | 'open' | 'closing'
 
 function buildSlides(): GallerySlide[] {
-  const hasHorizontal = horizontalImages.length > 0
-  const hasVertical = verticalImages.length > 0
-
-  if (!hasHorizontal && !hasVertical) {
-    return []
-  }
-
-  if (hasHorizontal && !hasVertical) {
-    return horizontalImages.map((src, index) => ({
-      id: `h-${index}`,
-      orientation: 'landscape',
-      imageSrc: src,
-    }))
-  }
-
-  if (!hasHorizontal && hasVertical) {
-    return verticalImages.map((src, index) => ({
-      id: `v-${index}`,
-      orientation: 'portrait',
-      imageSrc: src,
-    }))
-  }
-
-  const slideCount = Math.max(horizontalImages.length, verticalImages.length) * 2
-
-  return Array.from({ length: slideCount }, (_, index) => {
-    const prefersLandscape = index % 2 === 0
-
-    if (prefersLandscape) {
-      return {
-        id: `h-${index}`,
-        orientation: 'landscape',
-        imageSrc: horizontalImages[index % horizontalImages.length],
-      }
-    }
-
-    return {
-      id: `v-${index}`,
-      orientation: 'portrait',
-      imageSrc: verticalImages[index % verticalImages.length],
-    }
-  })
+  return PROJECTS.map((project) => ({
+    id: project.id,
+    orientation: project.orientation,
+    imageSrc: project.imageSrc,
+    slug: project.slug,
+  }))
 }
 
 function GallerySection() {
+  const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const trackRef = useRef<HTMLDivElement | null>(null)
   const firstSetRef = useRef<HTMLDivElement | null>(null)
@@ -195,6 +102,7 @@ function GallerySection() {
     }
 
     track.style.transform = `translate3d(${-currentXRef.current}px, 0, 0)`
+    persistedGalleryTrackX = currentXRef.current
   }
 
   const updateCardParallax = () => {
@@ -389,6 +297,19 @@ function GallerySection() {
     startAnimation()
   }
 
+  const getCenteredCardElement = () => {
+    const viewport = viewportRef.current
+    if (!viewport) {
+      return null
+    }
+
+    const viewportRect = viewport.getBoundingClientRect()
+    const centerX = viewportRect.left + viewportRect.width / 2
+    const centerY = viewportRect.top + viewportRect.height / 2
+
+    return document.elementFromPoint(centerX, centerY)?.closest('.gallery-card') as HTMLElement | null
+  }
+
   useEffect(() => {
     const firstSet = firstSetRef.current
     if (!firstSet) {
@@ -422,8 +343,10 @@ function GallerySection() {
         .filter((metric): metric is CardMetric => metric !== null)
 
       const middleStart = setWidthRef.current * middleSetIndex
-      currentXRef.current = middleStart
-      targetXRef.current = middleStart
+      const startingX = persistedGalleryTrackX ?? middleStart
+      currentXRef.current = startingX
+      targetXRef.current = startingX
+      normalizeInfinitePosition()
       applyTrackTransform()
       updateCardParallax()
       requestCenterHitState()
@@ -581,7 +504,7 @@ function GallerySection() {
     const releaseVelocity = dragVelocityRef.current
     dragVelocityRef.current = 0
 
-    if (Math.abs(releaseVelocity) >= dragReleaseMinVelocity) {
+    if (dragMovedRef.current && Math.abs(releaseVelocity) >= dragReleaseMinVelocity) {
       const cappedReleaseVelocity = Math.max(
         -dragReleaseVelocityCap,
         Math.min(dragReleaseVelocityCap, releaseVelocity),
@@ -602,7 +525,24 @@ function GallerySection() {
         ?.closest('.gallery-card') as HTMLElement | null
 
       if (releasedCard) {
-        focusCardToCenter(releasedCard)
+        const centeredCard = getCenteredCardElement()
+        const isReleasedCardCentered = centeredCard === releasedCard
+
+        if (isReleasedCardCentered) {
+          const projectSlug = releasedCard.dataset.projectSlug
+          if (projectSlug) {
+            if (animationFrameRef.current !== null) {
+              window.cancelAnimationFrame(animationFrameRef.current)
+              animationFrameRef.current = null
+            }
+            targetXRef.current = currentXRef.current
+            isFocusCenterAnimationRef.current = false
+            navigate(`/work/${projectSlug}`)
+            return
+          }
+        } else {
+          focusCardToCenter(releasedCard)
+        }
       }
     }
 
@@ -664,6 +604,7 @@ function GallerySection() {
                 <article
                   key={`${setIndex}-${slide.id}-${index}`}
                   className={`gallery-card gallery-card--${slide.orientation}`}
+                  data-project-slug={slide.slug}
                 >
                   <img
                     src={slide.imageSrc}

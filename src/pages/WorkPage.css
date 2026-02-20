@@ -41,6 +41,7 @@
 }
 
 .work-project__media {
+  display: block;
   margin: 0;
   position: relative;
   width: var(--work-image-width);

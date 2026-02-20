@@ -9,6 +9,7 @@ import motionBlurHeroOptimized from './assets/images/motion-blur-hero-optimized.
 import FreetimePage from './pages/FreetimePage'
 import IndexPage from './pages/IndexPage'
 import InfoPage from './pages/InfoPage'
+import ProjectDetailPage from './pages/ProjectDetailPage'
 import WorkPage from './pages/WorkPage'
 import './App.css'
 
@@ -21,6 +22,7 @@ function AppRoutes({ routeLocation }: AppRoutesProps) {
     <Routes location={routeLocation}>
       <Route path="/" element={<IndexPage />} />
       <Route path="/work" element={<WorkPage />} />
+      <Route path="/work/:projectSlug" element={<ProjectDetailPage />} />
       <Route path="/freetime" element={<FreetimePage />} />
       <Route path="/info" element={<InfoPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
