@@ -55,7 +55,7 @@
   left: 2px;
   right: 2px;
   top: 0;
-  border: 1px solid #c91f1f;
+  border: 1px solid var(--color-signal-red);
   background: transparent;
   box-shadow: none;
   transform: translate3d(0, 0, 0);
@@ -180,7 +180,7 @@
 
 .project-detail-visit:hover,
 .project-detail-visit:focus-visible {
-  color: #c91f1f;
+  color: var(--color-signal-red);
 }
 
 .project-detail-visit:hover .project-detail-visit-swap__primary,
