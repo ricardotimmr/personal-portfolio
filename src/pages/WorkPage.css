@@ -231,7 +231,7 @@
   line-height: 1.1;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-accent-green) 72%, transparent);
+  color: var(--color-signal-red);
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 220ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
