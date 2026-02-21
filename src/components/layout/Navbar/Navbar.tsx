@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import type { Theme } from '../../../hooks/useTheme'
 import './Navbar.css'
 
 const navItems = [
@@ -9,13 +10,20 @@ const navItems = [
   { label: 'INFO', to: '/info' },
 ]
 
-function Navbar() {
+type NavbarProps = {
+  theme: Theme
+  onToggleTheme: () => void
+}
+
+function Navbar({ theme, onToggleTheme }: NavbarProps) {
   const [isHidden, setIsHidden] = useState(false)
   const [isYearOverlayOpen, setIsYearOverlayOpen] = useState(false)
+  const [isBlinking, setIsBlinking] = useState(false)
   const [activeIndicatorY, setActiveIndicatorY] = useState(0)
   const [hasActiveIndicator, setHasActiveIndicator] = useState(false)
   const previousScrollYRef = useRef(0)
   const menuRef = useRef<HTMLElement | null>(null)
+  const themeToggleRef = useRef<HTMLButtonElement | null>(null)
   const location = useLocation()
 
   useEffect(() => {
@@ -86,6 +94,80 @@ function Navbar() {
     }
   }, [isYearOverlayOpen])
 
+  useEffect(() => {
+    let animationFrameId = 0
+    let targetX = 0
+    let targetY = 0
+
+    const updatePupilOffset = () => {
+      animationFrameId = 0
+      const toggle = themeToggleRef.current
+      if (!toggle) {
+        return
+      }
+
+      const maxOffsetX = 2.2
+      const maxOffsetY = 1.8
+      const rect = toggle.getBoundingClientRect()
+      const centerX = rect.left + rect.width * 0.5
+      const centerY = rect.top + rect.height * 0.5
+      const deltaX = targetX - centerX
+      const deltaY = targetY - centerY
+      const distance = Math.hypot(deltaX, deltaY) || 1
+      const normalizedX = deltaX / distance
+      const normalizedY = deltaY / distance
+
+      toggle.style.setProperty('--theme-pupil-x', `${normalizedX * maxOffsetX}px`)
+      toggle.style.setProperty('--theme-pupil-y', `${normalizedY * maxOffsetY}px`)
+    }
+
+    const onMouseMove = (event: MouseEvent) => {
+      targetX = event.clientX
+      targetY = event.clientY
+      if (!animationFrameId) {
+        animationFrameId = window.requestAnimationFrame(updatePupilOffset)
+      }
+    }
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true })
+
+    return () => {
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId)
+      }
+      window.removeEventListener('mousemove', onMouseMove)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      return
+    }
+
+    let blinkTimeoutId = 0
+    let pauseTimeoutId = 0
+    let isFirstBlink = true
+
+    const scheduleBlink = () => {
+      const nextBlinkDelay = isFirstBlink ? 1400 + Math.random() * 1800 : 5200 + Math.random() * 6200
+      isFirstBlink = false
+      blinkTimeoutId = window.setTimeout(() => {
+        setIsBlinking(true)
+        pauseTimeoutId = window.setTimeout(() => {
+          setIsBlinking(false)
+          scheduleBlink()
+        }, 170)
+      }, nextBlinkDelay)
+    }
+
+    scheduleBlink()
+
+    return () => {
+      window.clearTimeout(blinkTimeoutId)
+      window.clearTimeout(pauseTimeoutId)
+    }
+  }, [theme])
+
   return (
     <>
       <header className={`site-navbar ${isHidden ? 'is-hidden' : ''}`}>
@@ -122,17 +204,37 @@ function Navbar() {
             ))}
           </nav>
 
-          <button
-            type="button"
-            className="site-navbar__year nav-text-swap"
-            onClick={() => setIsYearOverlayOpen(true)}
-            aria-label="Open introduction"
-          >
-            <span className="nav-text-swap__primary">[2026]</span>
-            <span className="nav-text-swap__secondary" aria-hidden="true">
-              [2026]
-            </span>
-          </button>
+          <div className="site-navbar__actions">
+            <button
+              type="button"
+              className={`site-navbar__theme-toggle ${theme === 'light' && isBlinking ? 'is-blinking' : ''}`}
+              onClick={onToggleTheme}
+              ref={themeToggleRef}
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              <span className="site-navbar__theme-eyes" aria-hidden="true">
+                <span className="site-navbar__theme-eye">
+                  <span className="site-navbar__theme-pupil" />
+                </span>
+                <span className="site-navbar__theme-eye">
+                  <span className="site-navbar__theme-pupil" />
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="site-navbar__year nav-text-swap"
+              onClick={() => setIsYearOverlayOpen(true)}
+              aria-label="Open introduction"
+            >
+              <span className="nav-text-swap__primary">[2026]</span>
+              <span className="nav-text-swap__secondary" aria-hidden="true">
+                [2026]
+              </span>
+            </button>
+          </div>
         </div>
       </header>
 

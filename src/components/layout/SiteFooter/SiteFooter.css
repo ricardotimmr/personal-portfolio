@@ -1,10 +1,13 @@
 .footer-section {
   width: 100%;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-black) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, #0d0d0d 12%, transparent);
 }
 
 .section--footer {
   --footer-frame: clamp(14px, 1.736vw, 25px);
+  --footer-fg: #0d0d0d;
+  --footer-inverse: #f8f9f9;
+  --footer-accent: #c91f1f;
   min-height: 100vh;
   min-height: 100svh;
   background: var(--color-white);
@@ -37,12 +40,12 @@
   font-size: clamp(56px, 6.667vw, 96px);
   font-weight: 400;
   line-height: 0.86;
-  color: var(--color-white);
+  color: var(--footer-inverse);
   text-decoration: none;
 }
 
 .footer-cta-link span:first-child {
-  color: var(--color-accent-green);
+  color: var(--footer-accent);
 }
 
 .footer-meta {
@@ -51,7 +54,7 @@
   font-size: clamp(12px, 0.972vw, 14px);
   font-weight: var(--font-weight-regular);
   line-height: 1;
-  color: var(--color-black);
+  color: var(--footer-fg);
 }
 
 .footer-meta--left {
@@ -67,7 +70,7 @@
   font-size: clamp(24px, 2.222vw, 32px);
   font-weight: var(--font-weight-medium);
   line-height: 1;
-  color: var(--color-white);
+  color: var(--footer-inverse);
   text-decoration: none;
   align-self: end;
   display: inline-flex;
@@ -137,7 +140,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--color-white);
+  color: var(--footer-inverse);
   cursor: pointer;
   line-height: 0;
   transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
