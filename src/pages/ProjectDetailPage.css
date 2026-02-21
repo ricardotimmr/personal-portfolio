@@ -10,9 +10,9 @@
 
 .project-scroll-minimap {
   position: fixed;
-  top: 50%;
+  top: 120px;
   right: clamp(18px, 6.25vw, 90px);
-  transform: translateY(-50%);
+  transform: none;
   z-index: 24;
   pointer-events: none;
 }
