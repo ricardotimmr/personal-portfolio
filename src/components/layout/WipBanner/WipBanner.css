@@ -1,0 +1,25 @@
+.wip-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 140;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wip-banner__text {
+  margin: 0;
+  padding: 7px 14px;
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.694vw, 10px);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white);
+  background: color-mix(in srgb, var(--color-black) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-white) 20%, transparent);
+  border-top: 0;
+}

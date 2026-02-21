@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, type Location } from 'react-router-dom'
 import Navbar from './components/layout/Navbar/Navbar'
+import WipBanner from './components/layout/WipBanner/WipBanner'
 import SmoothScroll from './components/navigation/SmoothScroll/SmoothScroll'
 import CursorTrail from './components/overlay/CursorTrail/CursorTrail'
 import InitialLoader from './components/overlay/InitialLoader/InitialLoader'
@@ -12,6 +13,8 @@ import InfoPage from './pages/InfoPage'
 import ProjectDetailPage from './pages/ProjectDetailPage'
 import WorkPage from './pages/WorkPage'
 import './App.css'
+
+const SHOW_WIP_BANNER = true
 
 type AppRoutesProps = {
   routeLocation: Location
@@ -62,6 +65,7 @@ function App() {
         <>
           <SmoothScroll deferRouteSync={shouldDeferRouteScrollSync} />
           <CursorTrail />
+          {SHOW_WIP_BANNER ? <WipBanner /> : null}
           <Navbar />
         </>
       ) : null}
