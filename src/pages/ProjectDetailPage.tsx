@@ -9,8 +9,11 @@ function ProjectDetailPage() {
   const { projectSlug = '' } = useParams()
   const project = getProjectBySlug(projectSlug)
   const mainContentRef = useRef<HTMLDivElement | null>(null)
+  const minimapRef = useRef<HTMLElement | null>(null)
+  const minimapFrameRef = useRef<HTMLDivElement | null>(null)
   const minimapHostRef = useRef<HTMLDivElement | null>(null)
   const minimapViewportRef = useRef<HTMLSpanElement | null>(null)
+  const heroRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!project) {
@@ -18,9 +21,12 @@ function ProjectDetailPage() {
     }
 
     const source = mainContentRef.current
+    const minimap = minimapRef.current
+    const minimapFrame = minimapFrameRef.current
     const minimapHost = minimapHostRef.current
     const viewportMarker = minimapViewportRef.current
-    if (!source || !minimapHost || !viewportMarker) {
+    const hero = heroRef.current
+    if (!source || !minimap || !minimapFrame || !minimapHost || !viewportMarker || !hero) {
       return
     }
 
@@ -66,9 +72,31 @@ function ProjectDetailPage() {
       viewportMarker.style.transform = `translate3d(0, ${markerTop.toFixed(3)}px, 0)`
     }
 
+    const updateMinimapPosition = () => {
+      const heroTopDoc = hero.getBoundingClientRect().top + window.scrollY
+      const baseTop = Math.max(12, heroTopDoc)
+      const minimapHeight = minimapFrame.clientHeight
+      const lastPlaceholder = source.querySelector(
+        '.project-detail-visual-stack:last-of-type .project-detail-visual:last-child',
+      ) as HTMLElement | null
+
+      if (!lastPlaceholder) {
+        minimap.style.top = `${baseTop.toFixed(3)}px`
+        return
+      }
+
+      const lastPlaceholderBottomDoc = lastPlaceholder.getBoundingClientRect().bottom + window.scrollY
+      const clampedTop = Math.min(
+        baseTop,
+        lastPlaceholderBottomDoc - window.scrollY - minimapHeight,
+      )
+      minimap.style.top = `${clampedTop.toFixed(3)}px`
+    }
+
     const updateAll = () => {
       rafId = null
       updateGeometry()
+      updateMinimapPosition()
       updateViewportMarker()
     }
 
@@ -105,8 +133,8 @@ function ProjectDetailPage() {
 
   return (
     <main className="project-detail-page">
-      <aside className="project-scroll-minimap" aria-hidden="true">
-        <div className="project-scroll-minimap__frame">
+      <aside className="project-scroll-minimap" aria-hidden="true" ref={minimapRef}>
+        <div className="project-scroll-minimap__frame" ref={minimapFrameRef}>
           <div className="project-scroll-minimap__host" ref={minimapHostRef} />
           <span className="project-scroll-minimap__viewport" ref={minimapViewportRef} />
         </div>
@@ -153,7 +181,7 @@ function ProjectDetailPage() {
             </a>
           </header>
 
-          <figure className="project-detail-hero">
+          <figure className="project-detail-hero" ref={heroRef}>
             <img src={project.imageSrc} alt="" className="project-detail-hero__image" />
           </figure>
 
