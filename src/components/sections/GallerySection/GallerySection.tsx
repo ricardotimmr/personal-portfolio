@@ -70,6 +70,7 @@ function GallerySection() {
   const closeTextTimeoutRef = useRef<number | null>(null)
   const centerHitRafRef = useRef<number | null>(null)
   const pointerInsideRef = useRef(false)
+  const hasPointerPositionRef = useRef(false)
   const pointerXRef = useRef(0)
   const pointerYRef = useRef(0)
   const activePointerIdRef = useRef<number | null>(null)
@@ -203,12 +204,24 @@ function GallerySection() {
 
   const updateCenterHitState = () => {
     const viewport = viewportRef.current
-    if (!viewport || !pointerInsideRef.current) {
+    if (!viewport || !hasPointerPositionRef.current) {
       setCenterHovering(false)
       return
     }
 
     const viewportRect = viewport.getBoundingClientRect()
+    const isPointerInsideViewport =
+      pointerXRef.current >= viewportRect.left &&
+      pointerXRef.current <= viewportRect.right &&
+      pointerYRef.current >= viewportRect.top &&
+      pointerYRef.current <= viewportRect.bottom
+
+    pointerInsideRef.current = isPointerInsideViewport
+    if (!isPointerInsideViewport) {
+      setCenterHovering(false)
+      return
+    }
+
     const centerX = viewportRect.left + viewportRect.width / 2
     const centerY = viewportRect.top + viewportRect.height / 2
 
@@ -397,6 +410,20 @@ function GallerySection() {
     }
   }, [uniqueImageSources])
 
+  useEffect(() => {
+    const onWindowPointerMove = (event: PointerEvent) => {
+      hasPointerPositionRef.current = true
+      pointerXRef.current = event.clientX
+      pointerYRef.current = event.clientY
+      requestCenterHitState()
+    }
+
+    window.addEventListener('pointermove', onWindowPointerMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onWindowPointerMove)
+    // requestCenterHitState depends on mutable refs and should not trigger effect recreation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     if (setWidthRef.current === 0) {
       return
@@ -458,6 +485,7 @@ function GallerySection() {
   }
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    hasPointerPositionRef.current = true
     pointerInsideRef.current = true
     pointerXRef.current = event.clientX
     pointerYRef.current = event.clientY
@@ -578,6 +606,14 @@ function GallerySection() {
     setCenterHovering(false)
   }
 
+  const handlePointerEnter = (event: ReactPointerEvent<HTMLDivElement>) => {
+    hasPointerPositionRef.current = true
+    pointerInsideRef.current = true
+    pointerXRef.current = event.clientX
+    pointerYRef.current = event.clientY
+    requestCenterHitState()
+  }
+
   return (
     <section className="index-section section--gallery">
       <p className="gallery-title">[THE GALLERY]</p>
@@ -589,6 +625,7 @@ function GallerySection() {
         ref={viewportRef}
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
+        onPointerEnter={handlePointerEnter}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
