@@ -7,6 +7,7 @@ import CursorTrail from './components/overlay/CursorTrail/CursorTrail'
 import InitialLoader from './components/overlay/InitialLoader/InitialLoader'
 import PageTransition from './components/overlay/PageTransition/PageTransition'
 import motionBlurHeroOptimized from './assets/images/motion-blur-hero-optimized.jpg'
+import { useTheme } from './hooks/useTheme'
 import FreetimePage from './pages/FreetimePage'
 import IndexPage from './pages/IndexPage'
 import InfoPage from './pages/InfoPage'
@@ -39,6 +40,7 @@ function App() {
   const [isPageTransitioning, setIsPageTransitioning] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
   const [isLoaderDone, setIsLoaderDone] = useState(false)
+  const { theme, toggleTheme } = useTheme()
   const handleReveal = useCallback(() => setIsRevealed(true), [])
   const handleLoaderComplete = useCallback(() => setIsLoaderDone(true), [])
 
@@ -66,7 +68,7 @@ function App() {
           <SmoothScroll deferRouteSync={shouldDeferRouteScrollSync} />
           <CursorTrail />
           {SHOW_WIP_BANNER ? <WipBanner /> : null}
-          <Navbar />
+          <Navbar theme={theme} onToggleTheme={toggleTheme} />
         </>
       ) : null}
 

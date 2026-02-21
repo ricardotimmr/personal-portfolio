@@ -71,6 +71,87 @@
 
 .site-navbar__year {
   justify-self: end;
+}
+
+.site-navbar__actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(12px, 1.111vw, 16px);
+  pointer-events: auto;
+}
+
+.site-navbar__theme-toggle {
+  --theme-pupil-x: 0px;
+  --theme-pupil-y: 0px;
+  width: 34px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: currentColor;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease;
+}
+
+.site-navbar__theme-toggle:hover,
+.site-navbar__theme-toggle:focus-visible {
+  transform: scale(1.08);
+}
+
+.site-navbar__theme-eyes {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.site-navbar__theme-eye {
+  width: 15px;
+  height: 12px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  transition:
+    height 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.site-navbar__theme-pupil {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translate(var(--theme-pupil-x), var(--theme-pupil-y));
+  will-change: transform;
+  transition:
+    transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease;
+}
+
+:root[data-theme='dark'] .site-navbar__theme-eye,
+.site-navbar__theme-toggle.is-blinking .site-navbar__theme-eye {
+  height: 2px;
+  border-color: transparent;
+  background: currentColor;
+  transform: translateY(1px);
+}
+
+:root[data-theme='dark'] .site-navbar__theme-pupil,
+.site-navbar__theme-toggle.is-blinking .site-navbar__theme-pupil {
+  opacity: 0;
+  transform: translate(var(--theme-pupil-x), var(--theme-pupil-y)) scale(0.5);
+}
+
+.site-navbar__year {
   pointer-events: auto;
   cursor: pointer;
   background: none;
@@ -128,7 +209,7 @@
   display: grid;
   place-items: center;
   padding: clamp(24px, 6vw, 96px);
-  background: rgba(248, 249, 249, 0.8);
+  background: var(--color-overlay-backdrop);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;

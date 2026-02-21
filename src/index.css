@@ -15,11 +15,42 @@
   font-display: swap;
 }
 
+@property --color-black {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0d0d0d;
+}
+
+@property --color-white {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f8f9f9;
+}
+
+@property --color-accent-green {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #c91f1f;
+}
+
+@property --color-signal-red {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #c91f1f;
+}
+
+@property --color-overlay-backdrop {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(248, 249, 249, 0.8);
+}
+
 :root {
   --color-black: #0d0d0d;
   --color-white: #f8f9f9;
-  --color-accent-green: #192617;
   --color-signal-red: #c91f1f;
+  --color-accent-green: var(--color-signal-red);
+  --color-overlay-backdrop: rgba(248, 249, 249, 0.8);
 
   --font-mono: 'Geist Mono', 'SFMono-Regular', Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
@@ -35,6 +66,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='dark'] {
+  --color-black: #f8f9f9;
+  --color-white: #0d0d0d;
+  --color-signal-red: #ff6a6a;
+  --color-accent-green: var(--color-signal-red);
+  --color-overlay-backdrop: rgba(13, 13, 13, 0.8);
+  color-scheme: dark;
 }
 
 *,
@@ -56,4 +96,19 @@ body {
   min-width: 320px;
   background: var(--color-white);
   color: var(--color-black);
+}
+
+:root.theme-ready {
+  transition:
+    --color-black 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    --color-white 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    --color-accent-green 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    --color-signal-red 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    --color-overlay-backdrop 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.theme-ready {
+    transition: none;
+  }
 }
