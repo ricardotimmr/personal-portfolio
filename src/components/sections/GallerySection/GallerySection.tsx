@@ -43,6 +43,7 @@ const dragReleaseMinVelocity = 0.025
 const dragReleaseMaxDistancePx = 1500
 const dragReleaseVelocityCap = 1.8
 const dragClickThresholdPx = 6
+const centerNavigationThresholdPx = 1
 const focusCenterInertialLerp = GALLERY_SCROLL_INERTIAL_LERP * 0.62
 let persistedGalleryTrackX: number | null = null
 
@@ -297,17 +298,20 @@ function GallerySection() {
     startAnimation()
   }
 
-  const getCenteredCardElement = () => {
+  const isCardPreciselyCentered = (cardElement: HTMLElement) => {
     const viewport = viewportRef.current
     if (!viewport) {
-      return null
+      return false
     }
 
     const viewportRect = viewport.getBoundingClientRect()
-    const centerX = viewportRect.left + viewportRect.width / 2
-    const centerY = viewportRect.top + viewportRect.height / 2
+    const cardRect = cardElement.getBoundingClientRect()
+    const viewportCenterX = viewportRect.left + viewportRect.width / 2
+    const cardCenterX = cardRect.left + cardRect.width / 2
+    const centerDelta = Math.abs(cardCenterX - viewportCenterX)
+    const isSettled = Math.abs(targetXRef.current - currentXRef.current) <= 0.2
 
-    return document.elementFromPoint(centerX, centerY)?.closest('.gallery-card') as HTMLElement | null
+    return centerDelta <= centerNavigationThresholdPx && isSettled && animationFrameRef.current === null
   }
 
   useEffect(() => {
@@ -525,8 +529,7 @@ function GallerySection() {
         ?.closest('.gallery-card') as HTMLElement | null
 
       if (releasedCard) {
-        const centeredCard = getCenteredCardElement()
-        const isReleasedCardCentered = centeredCard === releasedCard
+        const isReleasedCardCentered = isCardPreciselyCentered(releasedCard)
 
         if (isReleasedCardCentered) {
           const projectSlug = releasedCard.dataset.projectSlug
