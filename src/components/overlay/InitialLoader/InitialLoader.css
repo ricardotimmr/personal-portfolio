@@ -83,6 +83,10 @@
   transform-origin: center center;
 }
 
+:root[data-theme='dark'] .initial-loader__bike {
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .initial-loader--bike-exit .initial-loader__bike,
 .initial-loader--split-open .initial-loader__bike {
   transition: transform 760ms cubic-bezier(0.22, 1, 0.36, 1), opacity 760ms ease;
