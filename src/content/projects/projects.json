@@ -1,11 +1,70 @@
 [
   {
+    "id": "project-13",
+    "slug": "shrinkify-entwicklungsprojekt",
+    "title": "Shrinkify Entwicklungsprojekt",
+    "orientation": "landscape",
+    "description": "Web-based file compression tool designed for seamless CMS integration. Shrinkify enables structured uploads, automated optimization and role-based workflows for content managers and asset owners, focusing on usability, security and scalable processing of large media files.",
+    "roles": [
+      "Frontend Developer",
+      "UI Designer"
+    ],
+    "visitUrl": "https://github.com/ricardotimmr/entwicklungsprojekt-shrinkify",
+    "detail": {
+      "overviewHeadline": "A modular web application for automated file compression in CMS-driven environments.",
+      "overviewMeta": "Shrinkify streamlines large media handling through intuitive upload flows, structured processing and clear role separation between asset owners and content managers.",
+      "processHeadline": "The system architecture balances usability, security and technical constraints.",
+      "processMeta": "Frontend, backend and conversion logic were structured around defined ADRs to ensure maintainability, scalability and future integration into existing CMS workflows."
+    },
+    "assets": {
+      "folder": "shrinkify-entwicklungsprojekt",
+      "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+      "fallbackDetails": [
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-14",
+    "slug": "varia-praxisprojekt",
+    "title": "Varia Praxisprojekt",
+    "orientation": "portrait",
+    "description": "Interactive web tool for building modular product presentation components such as feature sliders, 360° viewers and hotspot graphics. Designed for agencies and brands to create CI-consistent, reusable product modules with live preview and structured export logic.",
+    "roles": [
+      "Frontend Developer",
+      "UX/UI Designer"
+    ],
+    "visitUrl": "https://github.com/ricardotimmr/praxisprojekt-2025-varia",
+    "detail": {
+      "overviewHeadline": "A modular web application for interactive product presentation systems.",
+      "overviewMeta": "Varia enables the creation of reusable, CI-compliant product modules that enhance digital storytelling and conversion on marketing websites.",
+      "processHeadline": "The project combined UX research, component architecture and technical validation.",
+      "processMeta": "Low-fidelity prototyping, defined user flows and Proof-of-Concept modules ensured feasibility while a scalable frontend architecture prepared the system for future expansion."
+    },
+    "assets": {
+      "folder": "varia-praxisprojekt",
+      "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+      "fallbackDetails": [
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg"
+      ]
+    }
+  },
+  {
     "id": "project-01",
     "slug": "solara-booking",
     "title": "Solara Booking",
     "orientation": "landscape",
     "description": "Booking flow redesign focused on speed, trust cues, and cleaner conversion paths.",
-    "roles": ["Frontend Developer", "UI Designer"],
+    "roles": [
+      "Frontend Developer",
+      "UI Designer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A conversion-oriented booking flow balancing trust, speed, and clear next-step guidance.",
@@ -30,7 +89,10 @@
     "title": "Atlas Dashboard",
     "orientation": "portrait",
     "description": "Analytics interface designed for high-density information without visual overload.",
-    "roles": ["Product Designer", "Frontend Developer"],
+    "roles": [
+      "Product Designer",
+      "Frontend Developer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A structured dashboard system turning dense metrics into clear, scannable decisions.",
@@ -55,7 +117,10 @@
     "title": "Kinetic Commerce",
     "orientation": "landscape",
     "description": "Commerce experience with refined motion and product storytelling across the funnel.",
-    "roles": ["Interaction Designer", "UI Engineer"],
+    "roles": [
+      "Interaction Designer",
+      "UI Engineer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A commerce experience where motion supports clarity instead of distracting from purchase intent.",
@@ -80,7 +145,10 @@
     "title": "Northstar Platform",
     "orientation": "portrait",
     "description": "Enterprise product shell emphasizing consistency, clarity, and accessibility.",
-    "roles": ["Frontend Developer", "Design Systems"],
+    "roles": [
+      "Frontend Developer",
+      "Design Systems"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A scalable product shell for enterprise teams operating across complex workflows.",
@@ -105,7 +173,10 @@
     "title": "Flux Mobile",
     "orientation": "landscape",
     "description": "Cross-platform mobile interface strategy with shared interaction patterns.",
-    "roles": ["UX Designer", "Frontend Developer"],
+    "roles": [
+      "UX Designer",
+      "Frontend Developer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A mobile-first product surface focused on speed, continuity, and low-friction navigation.",
@@ -130,7 +201,10 @@
     "title": "Aurora Studio",
     "orientation": "portrait",
     "description": "Brand-forward portfolio platform balancing expression with readability.",
-    "roles": ["Design Engineer", "Interaction Designer"],
+    "roles": [
+      "Design Engineer",
+      "Interaction Designer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A brand-led studio experience with expressive visuals and disciplined information structure.",
@@ -155,7 +229,10 @@
     "title": "Delta Portal",
     "orientation": "landscape",
     "description": "Operations portal reducing friction in repetitive multi-step workflows.",
-    "roles": ["UI Designer", "Motion Designer"],
+    "roles": [
+      "UI Designer",
+      "Motion Designer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A workflow portal designed to reduce repetition costs in daily operations tasks.",
@@ -180,7 +257,10 @@
     "title": "Orbit Admin",
     "orientation": "portrait",
     "description": "Admin interface with stable hierarchy and reusable controls across modules.",
-    "roles": ["Frontend Engineer", "Accessibility Lead"],
+    "roles": [
+      "Frontend Engineer",
+      "Accessibility Lead"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "An admin environment tuned for repeat usage, fast scanning, and low visual noise.",
@@ -205,7 +285,10 @@
     "title": "Pulse Labs",
     "orientation": "landscape",
     "description": "Experimental interface language translated into production-ready components.",
-    "roles": ["Interaction Designer", "UI Engineer"],
+    "roles": [
+      "Interaction Designer",
+      "UI Engineer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "An experimentation-heavy interface translated into stable production patterns.",
@@ -230,7 +313,10 @@
     "title": "Summit Identity",
     "orientation": "portrait",
     "description": "Identity-led website framework with flexible modules and strong type rhythm.",
-    "roles": ["Frontend Developer", "UI Designer"],
+    "roles": [
+      "Frontend Developer",
+      "UI Designer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A brand-driven website system balancing expressive visuals and clear information flow.",
@@ -255,7 +341,10 @@
     "title": "Vector Ops",
     "orientation": "landscape",
     "description": "Operational dashboard ecosystem optimized for daily execution tasks.",
-    "roles": ["Product Designer", "Frontend Developer"],
+    "roles": [
+      "Product Designer",
+      "Frontend Developer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A practical operations interface tuned for repetitive usage and quick decision-making.",
@@ -280,7 +369,10 @@
     "title": "Nova Content",
     "orientation": "portrait",
     "description": "Content-focused platform architecture prepared for CMS-backed publishing.",
-    "roles": ["Design Engineer", "Interaction Designer"],
+    "roles": [
+      "Design Engineer",
+      "Interaction Designer"
+    ],
     "visitUrl": "",
     "detail": {
       "overviewHeadline": "A content platform architecture that keeps editorial flexibility without layout drift.",
@@ -298,55 +390,5 @@
         "maico-amorim-SJWPKMb9u-k-unsplash.jpg"
       ]
     }
-  },
-  {
-  "id": "project-13",
-  "slug": "shrinkify-entwicklungsprojekt",
-  "title": "Shrinkify Entwicklungsprojekt",
-  "orientation": "landscape",
-  "description": "Web-based file compression tool designed for seamless CMS integration. Shrinkify enables structured uploads, automated optimization and role-based workflows for content managers and asset owners, focusing on usability, security and scalable processing of large media files.",
-  "roles": ["Frontend Developer", "UI Designer"],
-  "visitUrl": "https://github.com/ricardotimmr/entwicklungsprojekt-shrinkify",
-  "detail": {
-    "overviewHeadline": "A modular web application for automated file compression in CMS-driven environments.",
-    "overviewMeta": "Shrinkify streamlines large media handling through intuitive upload flows, structured processing and clear role separation between asset owners and content managers.",
-    "processHeadline": "The system architecture balances usability, security and technical constraints.",
-    "processMeta": "Frontend, backend and conversion logic were structured around defined ADRs to ensure maintainability, scalability and future integration into existing CMS workflows."
-  },
-  "assets": {
-    "folder": "shrinkify-entwicklungsprojekt",
-    "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
-    "fallbackDetails": [
-      "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
-      "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
-      "atul-pandey-Mrhk78uramI-unsplash.jpg",
-      "martina-nette-uBjBr9CvNiw-unsplash.jpg"
-    ]
   }
-},
-{
-  "id": "project-14",
-  "slug": "varia-praxisprojekt",
-  "title": "Varia Praxisprojekt",
-  "orientation": "portrait",
-  "description": "Interactive web tool for building modular product presentation components such as feature sliders, 360° viewers and hotspot graphics. Designed for agencies and brands to create CI-consistent, reusable product modules with live preview and structured export logic.",
-  "roles": ["Frontend Developer", "UX/UI Designer"],
-  "visitUrl": "https://github.com/ricardotimmr/praxisprojekt-2025-varia",
-  "detail": {
-    "overviewHeadline": "A modular web application for interactive product presentation systems.",
-    "overviewMeta": "Varia enables the creation of reusable, CI-compliant product modules that enhance digital storytelling and conversion on marketing websites.",
-    "processHeadline": "The project combined UX research, component architecture and technical validation.",
-    "processMeta": "Low-fidelity prototyping, defined user flows and Proof-of-Concept modules ensured feasibility while a scalable frontend architecture prepared the system for future expansion."
-  },
-  "assets": {
-    "folder": "varia-praxisprojekt",
-    "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
-    "fallbackDetails": [
-      "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
-      "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
-      "atul-pandey-Mrhk78uramI-unsplash.jpg",
-      "martina-nette-uBjBr9CvNiw-unsplash.jpg"
-    ]
-  }
-}
 ]
