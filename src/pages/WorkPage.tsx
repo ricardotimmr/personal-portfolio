@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from 'react'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
 import WorkProjectCard from '../components/sections/WorkGallery/WorkProjectCard'
 import WorkProjectPanelContent from '../components/sections/WorkGallery/WorkProjectPanelContent'
@@ -8,11 +8,18 @@ import {
 import { PROJECTS } from '../data/projects'
 import './WorkPage.css'
 
+const workCardAlignmentTargetViewportRatio = 0.5
+const workCardNavigationAlignmentThresholdPx = 6
+const workCardScrollAnimationMinDurationMs = 360
+const workCardScrollAnimationMaxDurationMs = 760
+const workCardScrollAnimationDistanceForMaxDurationPx = 520
+
 function WorkPage() {
   const projects = useMemo(() => PROJECTS, [])
   const sectionRef = useRef<HTMLElement | null>(null)
   const { activeProjectIndex, isPanelFadedOut, panelTransition, updateScrollLinkedState } =
     useWorkProjectPanelState(sectionRef, projects.length)
+  const cardFocusScrollRafRef = useRef<number | null>(null)
 
   const activeProject = projects[activeProjectIndex] ?? null
   const outgoingProject = panelTransition ? projects[panelTransition.fromIndex] ?? null : null
@@ -28,6 +35,106 @@ function WorkPage() {
       : -(1 - panelTransition.progress) * 100
     : 0
 
+  const focusProjectCardIntoViewportAlignment = useCallback((cardElement: HTMLElement) => {
+    const cardRect = cardElement.getBoundingClientRect()
+    const cardCenterY = cardRect.top + cardRect.height * 0.5
+    const targetCenterY = window.innerHeight * workCardAlignmentTargetViewportRatio
+    const centerDelta = cardCenterY - targetCenterY
+
+    if (Math.abs(centerDelta) <= workCardNavigationAlignmentThresholdPx) {
+      return
+    }
+
+    const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+    const nextScrollY = Math.max(0, Math.min(maxScrollY, window.scrollY + centerDelta))
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) {
+      window.scrollTo({ top: nextScrollY })
+      return
+    }
+
+    if (cardFocusScrollRafRef.current !== null) {
+      window.cancelAnimationFrame(cardFocusScrollRafRef.current)
+      cardFocusScrollRafRef.current = null
+    }
+
+    const startScrollY = window.scrollY
+    const travel = nextScrollY - startScrollY
+    if (Math.abs(travel) <= 0.5) {
+      window.scrollTo({ top: nextScrollY })
+      return
+    }
+
+    const distanceFactor = Math.min(
+      1,
+      Math.abs(travel) / workCardScrollAnimationDistanceForMaxDurationPx,
+    )
+    const durationMs =
+      workCardScrollAnimationMinDurationMs +
+      (workCardScrollAnimationMaxDurationMs - workCardScrollAnimationMinDurationMs) * distanceFactor
+    const startTime = performance.now()
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+
+    const animate = (timestamp: number) => {
+      const elapsed = timestamp - startTime
+      const progress = Math.min(1, elapsed / durationMs)
+      const easedProgress = easeInOutCubic(progress)
+      window.scrollTo({ top: startScrollY + travel * easedProgress })
+
+      if (progress >= 1) {
+        cardFocusScrollRafRef.current = null
+        return
+      }
+
+      cardFocusScrollRafRef.current = window.requestAnimationFrame(animate)
+    }
+
+    cardFocusScrollRafRef.current = window.requestAnimationFrame(animate)
+  }, [])
+
+  const isProjectCardAlignedForNavigation = useCallback((cardElement: HTMLElement) => {
+    const cardRect = cardElement.getBoundingClientRect()
+    const cardCenterY = cardRect.top + cardRect.height * 0.5
+    const targetCenterY = window.innerHeight * workCardAlignmentTargetViewportRatio
+    return Math.abs(cardCenterY - targetCenterY) <= workCardNavigationAlignmentThresholdPx
+  }, [])
+
+  const handleProjectCardClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (event.defaultPrevented) {
+        return
+      }
+
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return
+      }
+
+      // Keep keyboard-triggered link activation immediate.
+      if (event.detail === 0) {
+        return
+      }
+
+      const clickedCard = event.currentTarget
+      if (isProjectCardAlignedForNavigation(clickedCard)) {
+        return
+      }
+
+      event.preventDefault()
+      focusProjectCardIntoViewportAlignment(clickedCard)
+    },
+    [focusProjectCardIntoViewportAlignment, isProjectCardAlignedForNavigation],
+  )
+
+  useEffect(
+    () => () => {
+      if (cardFocusScrollRafRef.current !== null) {
+        window.cancelAnimationFrame(cardFocusScrollRafRef.current)
+      }
+    },
+    [],
+  )
+
   return (
     <main className="work-page">
       <section ref={sectionRef} className="work-section work-section--gallery">
@@ -38,6 +145,7 @@ function WorkPage() {
                 key={project.id}
                 project={project}
                 onImageLoad={() => updateScrollLinkedState(true)}
+                onProjectClick={handleProjectCardClick}
               />
             ))}
           </div>
