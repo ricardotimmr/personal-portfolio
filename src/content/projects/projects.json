@@ -1,0 +1,327 @@
+[
+  {
+    "id": "project-01",
+    "slug": "solara-booking",
+    "title": "Solara Booking",
+    "orientation": "landscape",
+    "description": "Booking flow redesign focused on speed, trust cues, and cleaner conversion paths.",
+    "roles": ["Frontend Developer", "UI Designer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A conversion-oriented booking flow balancing trust, speed, and clear next-step guidance.",
+      "overviewMeta": "The interface simplifies high-friction form steps with progressive disclosure and clear state feedback.",
+      "processHeadline": "Iterated with usability checks and implementation constraints to keep patterns reusable.",
+      "processMeta": "Built in React with a modular component structure designed for future expansion and A/B testing."
+    },
+    "assets": {
+      "folder": "solara-booking",
+      "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+      "fallbackDetails": [
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-02",
+    "slug": "atlas-dashboard",
+    "title": "Atlas Dashboard",
+    "orientation": "portrait",
+    "description": "Analytics interface designed for high-density information without visual overload.",
+    "roles": ["Product Designer", "Frontend Developer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A structured dashboard system turning dense metrics into clear, scannable decisions.",
+      "overviewMeta": "Layouts prioritize hierarchy, comparability, and low-cognitive-load scanning across viewports.",
+      "processHeadline": "Built with reusable cards, chart wrappers, and strict spacing/typography tokens.",
+      "processMeta": "Pattern-level decisions reduced edge-case styling while keeping data modules easy to maintain."
+    },
+    "assets": {
+      "folder": "atlas-dashboard",
+      "fallbackThumbnail": "valentin-salja-IzUa0XNlA4o-unsplash.jpg",
+      "fallbackDetails": [
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-03",
+    "slug": "kinetic-commerce",
+    "title": "Kinetic Commerce",
+    "orientation": "landscape",
+    "description": "Commerce experience with refined motion and product storytelling across the funnel.",
+    "roles": ["Interaction Designer", "UI Engineer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A commerce experience where motion supports clarity instead of distracting from purchase intent.",
+      "overviewMeta": "Micro-transitions were tuned to guide decisions around product variants and checkout confidence.",
+      "processHeadline": "Designed and shipped with performance budgets and progressive enhancement in mind.",
+      "processMeta": "Animations degrade gracefully while preserving hierarchy and perceived responsiveness."
+    },
+    "assets": {
+      "folder": "kinetic-commerce",
+      "fallbackThumbnail": "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+      "fallbackDetails": [
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+        "valentin-salja-IzUa0XNlA4o-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-04",
+    "slug": "northstar-platform",
+    "title": "Northstar Platform",
+    "orientation": "portrait",
+    "description": "Enterprise product shell emphasizing consistency, clarity, and accessibility.",
+    "roles": ["Frontend Developer", "Design Systems"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A scalable product shell for enterprise teams operating across complex workflows.",
+      "overviewMeta": "Navigation and layout patterns were standardized to reduce onboarding friction.",
+      "processHeadline": "Accessibility and keyboard flow were treated as first-class implementation constraints.",
+      "processMeta": "Reusable primitives lowered UI drift across teams and improved long-term maintainability."
+    },
+    "assets": {
+      "folder": "northstar-platform",
+      "fallbackThumbnail": "atul-pandey-Mrhk78uramI-unsplash.jpg",
+      "fallbackDetails": [
+        "valentin-salja-IzUa0XNlA4o-unsplash.jpg",
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-05",
+    "slug": "flux-mobile",
+    "title": "Flux Mobile",
+    "orientation": "landscape",
+    "description": "Cross-platform mobile interface strategy with shared interaction patterns.",
+    "roles": ["UX Designer", "Frontend Developer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A mobile-first product surface focused on speed, continuity, and low-friction navigation.",
+      "overviewMeta": "Core actions are surfaced early while deeper actions remain contextual and progressive.",
+      "processHeadline": "Designed to keep interaction language consistent across iOS and Android.",
+      "processMeta": "Component behavior and spacing rules were codified for predictable implementation."
+    },
+    "assets": {
+      "folder": "flux-mobile",
+      "fallbackThumbnail": "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+      "fallbackDetails": [
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "valentin-salja-IzUa0XNlA4o-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-06",
+    "slug": "aurora-studio",
+    "title": "Aurora Studio",
+    "orientation": "portrait",
+    "description": "Brand-forward portfolio platform balancing expression with readability.",
+    "roles": ["Design Engineer", "Interaction Designer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A brand-led studio experience with expressive visuals and disciplined information structure.",
+      "overviewMeta": "Typography and pacing establish narrative while maintaining strong content legibility.",
+      "processHeadline": "Interactions are intentional and sparse, prioritizing communication over decoration.",
+      "processMeta": "The codebase uses composable sections so new case studies can be added quickly."
+    },
+    "assets": {
+      "folder": "aurora-studio",
+      "fallbackThumbnail": "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+      "fallbackDetails": [
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-07",
+    "slug": "delta-portal",
+    "title": "Delta Portal",
+    "orientation": "landscape",
+    "description": "Operations portal reducing friction in repetitive multi-step workflows.",
+    "roles": ["UI Designer", "Motion Designer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A workflow portal designed to reduce repetition costs in daily operations tasks.",
+      "overviewMeta": "Visual rhythm and state visibility make process completion easier to track.",
+      "processHeadline": "Interaction contracts were documented to keep behavior predictable at scale.",
+      "processMeta": "Front-end implementation focused on resilient components and clear loading states."
+    },
+    "assets": {
+      "folder": "delta-portal",
+      "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+      "fallbackDetails": [
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-08",
+    "slug": "orbit-admin",
+    "title": "Orbit Admin",
+    "orientation": "portrait",
+    "description": "Admin interface with stable hierarchy and reusable controls across modules.",
+    "roles": ["Frontend Engineer", "Accessibility Lead"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "An admin environment tuned for repeat usage, fast scanning, and low visual noise.",
+      "overviewMeta": "Spacing, contrast, and data affordances were standardized for consistent comprehension.",
+      "processHeadline": "Shared UI primitives were built to minimize one-off patterns and regressions.",
+      "processMeta": "Accessibility checks were integrated into component-level implementation decisions."
+    },
+    "assets": {
+      "folder": "orbit-admin",
+      "fallbackThumbnail": "valentin-salja-IzUa0XNlA4o-unsplash.jpg",
+      "fallbackDetails": [
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-09",
+    "slug": "pulse-labs",
+    "title": "Pulse Labs",
+    "orientation": "landscape",
+    "description": "Experimental interface language translated into production-ready components.",
+    "roles": ["Interaction Designer", "UI Engineer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "An experimentation-heavy interface translated into stable production patterns.",
+      "overviewMeta": "The visual language keeps personality while preserving usability under dense content.",
+      "processHeadline": "Prototypes were stress-tested against edge states before implementation.",
+      "processMeta": "Final components prioritized maintainability and performance over one-off effects."
+    },
+    "assets": {
+      "folder": "pulse-labs",
+      "fallbackThumbnail": "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+      "fallbackDetails": [
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+        "valentin-salja-IzUa0XNlA4o-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-10",
+    "slug": "summit-identity",
+    "title": "Summit Identity",
+    "orientation": "portrait",
+    "description": "Identity-led website framework with flexible modules and strong type rhythm.",
+    "roles": ["Frontend Developer", "UI Designer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A brand-driven website system balancing expressive visuals and clear information flow.",
+      "overviewMeta": "Sections are structured for storytelling while remaining easy to update over time.",
+      "processHeadline": "Design tokens and motion rules keep consistency across varied content blocks.",
+      "processMeta": "The implementation emphasizes predictable composition and fast iteration."
+    },
+    "assets": {
+      "folder": "summit-identity",
+      "fallbackThumbnail": "atul-pandey-Mrhk78uramI-unsplash.jpg",
+      "fallbackDetails": [
+        "valentin-salja-IzUa0XNlA4o-unsplash.jpg",
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-11",
+    "slug": "vector-ops",
+    "title": "Vector Ops",
+    "orientation": "landscape",
+    "description": "Operational dashboard ecosystem optimized for daily execution tasks.",
+    "roles": ["Product Designer", "Frontend Developer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A practical operations interface tuned for repetitive usage and quick decision-making.",
+      "overviewMeta": "Dense task views are balanced with hierarchy cues and progressive disclosure.",
+      "processHeadline": "Every module was built with repeatable patterns and accessibility in mind.",
+      "processMeta": "The resulting system supports new workflows without redesigning core structures."
+    },
+    "assets": {
+      "folder": "vector-ops",
+      "fallbackThumbnail": "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+      "fallbackDetails": [
+        "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "valentin-salja-IzUa0XNlA4o-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg"
+      ]
+    }
+  },
+  {
+    "id": "project-12",
+    "slug": "nova-content",
+    "title": "Nova Content",
+    "orientation": "portrait",
+    "description": "Content-focused platform architecture prepared for CMS-backed publishing.",
+    "roles": ["Design Engineer", "Interaction Designer"],
+    "visitUrl": "",
+    "detail": {
+      "overviewHeadline": "A content platform architecture that keeps editorial flexibility without layout drift.",
+      "overviewMeta": "Structured fields and media slots make updates predictable and resilient.",
+      "processHeadline": "The pipeline was designed to transition smoothly into a CMS in a later phase.",
+      "processMeta": "Local JSON mirrors future CMS fields so migration remains low-risk."
+    },
+    "assets": {
+      "folder": "nova-content",
+      "fallbackThumbnail": "martina-nette-uBjBr9CvNiw-unsplash.jpg",
+      "fallbackDetails": [
+        "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+        "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+        "atul-pandey-Mrhk78uramI-unsplash.jpg",
+        "maico-amorim-SJWPKMb9u-k-unsplash.jpg"
+      ]
+    }
+  },
+  {
+  "id": "project-13",
+  "slug": "shrinkify-entwicklungsprojekt",
+  "title": "Shrinkify Entwicklungsprojekt",
+  "orientation": "portrait",
+  "description": "Web-based file compression tool designed for seamless CMS integration. Shrinkify enables structured uploads, automated optimization and role-based workflows for content managers and asset owners, focusing on usability, security and scalable processing of large media files.",
+  "roles": ["Frontend Developer", "UI Designer"],
+  "visitUrl": "https://github.com/ricardotimmr/entwicklungsprojekt-shrinkify",
+  "detail": {
+    "overviewHeadline": "A modular web application for automated file compression in CMS-driven environments.",
+    "overviewMeta": "Shrinkify streamlines large media handling through intuitive upload flows, structured processing and clear role separation between asset owners and content managers.",
+    "processHeadline": "The system architecture balances usability, security and technical constraints.",
+    "processMeta": "Frontend, backend and conversion logic were structured around defined ADRs to ensure maintainability, scalability and future integration into existing CMS workflows."
+  },
+  "assets": {
+    "folder": "shrinkify-entwicklungsprojekt",
+    "fallbackThumbnail": "maico-amorim-SJWPKMb9u-k-unsplash.jpg",
+    "fallbackDetails": [
+      "rene-wild-Oh3vQqRu0WU-unsplash.jpg",
+      "willian-justen-de-vasconcellos-nrO1MdlNelA-unsplash.jpg",
+      "atul-pandey-Mrhk78uramI-unsplash.jpg",
+      "martina-nette-uBjBr9CvNiw-unsplash.jpg"
+    ]
+  }
+}
+]

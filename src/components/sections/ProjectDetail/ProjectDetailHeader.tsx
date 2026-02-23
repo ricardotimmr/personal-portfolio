@@ -1,18 +1,22 @@
 import { ArrowRight } from 'lucide-react'
 
 type ProjectDetailHeaderProps = {
+  title: string
   description: string
   roles: string[]
   visitUrl?: string
 }
 
-function ProjectDetailHeader({ description, roles, visitUrl }: ProjectDetailHeaderProps) {
+function ProjectDetailHeader({ title, description, roles, visitUrl }: ProjectDetailHeaderProps) {
   const hasVisitUrl = Boolean(visitUrl)
 
   return (
     <header className="project-detail-header">
       <div className="project-detail-block project-detail-block--project">
-        <p className="project-detail-label">PROJECT</p>
+        <p className="project-detail-label-row">
+          <span className="project-detail-label">PROJECT</span>
+          <span className="project-detail-title">{title}</span>
+        </p>
         <p className="project-detail-copy">{description}</p>
       </div>
 

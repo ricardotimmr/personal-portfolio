@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ResponsiveImage from '../../common/ResponsiveImage'
 import { type ProjectRecord } from '../../../data/projects'
 
 type WorkProjectCardProps = {
@@ -10,10 +11,9 @@ function WorkProjectCard({ project, onImageLoad }: WorkProjectCardProps) {
   return (
     <article className="work-project">
       <Link className="work-project__media" to={`/work/${project.slug}`} aria-label={`Open ${project.title}`}>
-        <img
+        <ResponsiveImage
           className="work-project__image"
-          src={project.imageSrc}
-          alt=""
+          image={project.thumbnailImage}
           loading="eager"
           onLoad={onImageLoad}
         />
