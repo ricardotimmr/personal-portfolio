@@ -63,7 +63,7 @@ type GeneratedVariantSet = {
 }
 
 const thumbnailSizes = '(max-width: 900px) 88vw, 520px'
-const detailSizes = '(max-width: 900px) 94vw, 1280px'
+const detailSizes = '(max-width: 900px) 94vw, 1600px'
 
 const generatedModules = import.meta.glob('../assets/projects/generated/**/*.{avif,webp,jpg,jpeg}', {
   eager: true,

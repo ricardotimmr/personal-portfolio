@@ -14,6 +14,11 @@ This folder keeps original project media out of the web bundle.
 - `detail-04.<ext>`
 4. Run `npm run optimize:projects`.
 
+Optional targeted runs:
+- Single project: `npm run optimize:projects -- --project <project-slug>`
+- Single slot in one project: `npm run optimize:projects -- --project <project-slug> --slot detail-03`
+- Multiple slots in one project: `npm run optimize:projects -- --project <project-slug> --slot thumbnail,detail-01`
+
 ## Output
 
 - Optimized responsive variants are written to `src/assets/projects/generated/<project-slug>/`.
@@ -24,3 +29,4 @@ This folder keeps original project media out of the web bundle.
 
 - The app falls back to legacy project images when generated variants for a slot are missing.
 - Source images over configured limits fail optimization (enforced in `scripts/optimize-project-images.mjs`).
+- Slot updates are incremental: only generated files for slots that have raw inputs are replaced.

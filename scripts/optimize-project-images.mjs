@@ -1,4 +1,12 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  unlinkSync,
+} from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -13,31 +21,82 @@ const generatedRoot = path.resolve(repoRoot, 'src/assets/projects/generated')
 const allowedSourceExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.tiff'])
 const strictMaxSourceMegabytes = 18
 const strictMaxSourcePixels = 8400
+const preserveQualityWhenSourceAtMostMegabytes = 2
+const preserveQualityWhenSourceMaxEdgeAtMostPx = 2600
 
 const variantPlanBySlot = {
   thumbnail: {
-    widths: [360, 560, 760, 960],
-    quality: { jpeg: 78, webp: 72, avif: 56 },
+    widths: [640, 1280, 1920],
+    quality: { jpeg: 88, webp: 84, avif: 70 },
   },
   'detail-01': {
-    widths: [640, 960, 1280, 1600],
-    quality: { jpeg: 80, webp: 74, avif: 58 },
+    widths: [960, 1600, 2400],
+    quality: { jpeg: 90, webp: 86, avif: 72 },
   },
   'detail-02': {
-    widths: [640, 960, 1280, 1600],
-    quality: { jpeg: 80, webp: 74, avif: 58 },
+    widths: [960, 1600, 2400],
+    quality: { jpeg: 90, webp: 86, avif: 72 },
   },
   'detail-03': {
-    widths: [640, 960, 1280, 1600],
-    quality: { jpeg: 80, webp: 74, avif: 58 },
+    widths: [960, 1600, 2400],
+    quality: { jpeg: 90, webp: 86, avif: 72 },
   },
   'detail-04': {
-    widths: [640, 960, 1280, 1600],
-    quality: { jpeg: 80, webp: 74, avif: 58 },
+    widths: [960, 1600, 2400],
+    quality: { jpeg: 90, webp: 86, avif: 72 },
   },
 }
 
 const slots = ['thumbnail', 'detail-01', 'detail-02', 'detail-03', 'detail-04']
+const supportedCliOptions = new Set(['--project', '--slot'])
+
+function parseCliOptions() {
+  const options = {
+    project: null,
+    slots: null,
+  }
+
+  const args = process.argv.slice(2)
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index]
+
+    if (!supportedCliOptions.has(arg)) {
+      throw new Error(
+        `Unknown option "${arg}". Supported options: --project <slug>, --slot <slot|comma,list>.`,
+      )
+    }
+
+    const value = args[index + 1]
+    if (!value || value.startsWith('--')) {
+      throw new Error(`Missing value for ${arg}.`)
+    }
+
+    if (arg === '--project') {
+      options.project = value
+      index += 1
+      continue
+    }
+
+    if (arg === '--slot') {
+      const requestedSlots = value
+        .split(',')
+        .map((slot) => slot.trim())
+        .filter((slot) => slot.length > 0)
+
+      const invalid = requestedSlots.filter((slot) => !slots.includes(slot))
+      if (invalid.length > 0) {
+        throw new Error(
+          `Invalid slot(s): ${invalid.join(', ')}. Allowed: ${slots.join(', ')}`,
+        )
+      }
+
+      options.slots = requestedSlots.length > 0 ? requestedSlots : null
+      index += 1
+    }
+  }
+
+  return options
+}
 
 async function loadSharpOrThrow() {
   try {
@@ -103,47 +162,102 @@ function assertSourceWithinLimits(sourcePath, metadata) {
   }
 }
 
+function getEncodePlan(inputPath, metadata, slotConfig) {
+  const inputStats = statSync(inputPath)
+  const sourceMegabytes = inputStats.size / (1024 * 1024)
+  const maxEdge = Math.max(metadata.width ?? 0, metadata.height ?? 0)
+  const sourceWidth = metadata.width ?? slotConfig.widths[slotConfig.widths.length - 1]
+  const standardWidths = slotConfig.widths.filter((width) => width <= sourceWidth)
+  const resolvedStandardWidths =
+    standardWidths.length > 0 ? standardWidths : [Math.min(sourceWidth, slotConfig.widths[0])]
+
+  const shouldPreserveQuality =
+    sourceMegabytes <= preserveQualityWhenSourceAtMostMegabytes ||
+    maxEdge <= preserveQualityWhenSourceMaxEdgeAtMostPx
+
+  if (!shouldPreserveQuality) {
+    return {
+      mode: 'standard',
+      widths: resolvedStandardWidths,
+      quality: slotConfig.quality,
+      inputBytes: inputStats.size,
+    }
+  }
+
+  return {
+    mode: 'preserve',
+    widths: [sourceWidth],
+    quality: {
+      jpeg: 96,
+      webp: 95,
+      avif: 88,
+    },
+    inputBytes: inputStats.size,
+  }
+}
+
 async function optimizeSlotImage(sharp, inputPath, outputBasePath, slotConfig) {
   const metadata = await sharp(inputPath).metadata()
   assertSourceWithinLimits(inputPath, metadata)
 
+  const encodePlan = getEncodePlan(inputPath, metadata, slotConfig)
   let outputBytes = 0
-  const maxWidth = metadata.width ?? slotConfig.widths[slotConfig.widths.length - 1]
-  const widths = slotConfig.widths.filter((width) => width <= maxWidth)
-  const finalWidths = widths.length > 0 ? widths : [Math.min(maxWidth, slotConfig.widths[0])]
 
-  for (const width of finalWidths) {
+  for (const width of encodePlan.widths) {
     const base = sharp(inputPath).rotate().resize({ width, withoutEnlargement: true })
 
     const jpegOutput = `${outputBasePath}-w${width}.jpg`
     await base
       .clone()
-      .jpeg({ quality: slotConfig.quality.jpeg, mozjpeg: true, progressive: true })
+      .jpeg({ quality: encodePlan.quality.jpeg, mozjpeg: true, progressive: true })
       .toFile(jpegOutput)
     outputBytes += statSync(jpegOutput).size
 
     const webpOutput = `${outputBasePath}-w${width}.webp`
-    await base.clone().webp({ quality: slotConfig.quality.webp, effort: 5 }).toFile(webpOutput)
+    await base.clone().webp({ quality: encodePlan.quality.webp, effort: 5 }).toFile(webpOutput)
     outputBytes += statSync(webpOutput).size
 
     const avifOutput = `${outputBasePath}-w${width}.avif`
     await base
       .clone()
-      .avif({ quality: slotConfig.quality.avif, effort: 6, chromaSubsampling: '4:2:0' })
+      .avif({ quality: encodePlan.quality.avif, effort: 5, chromaSubsampling: '4:4:4' })
       .toFile(avifOutput)
     outputBytes += statSync(avifOutput).size
   }
 
   return {
-    inputBytes: statSync(inputPath).size,
+    inputBytes: encodePlan.inputBytes,
     outputBytes,
     width: metadata.width,
     height: metadata.height,
+    mode: encodePlan.mode,
   }
+}
+
+function removeExistingGeneratedSlotFiles(projectOutputDir, slot) {
+  if (!existsSync(projectOutputDir)) {
+    return
+  }
+
+  const entryNames = readdirSync(projectOutputDir)
+  const slotPrefix = `${slot}-w`
+  entryNames.forEach((entryName) => {
+    if (!entryName.startsWith(slotPrefix)) {
+      return
+    }
+
+    const extension = path.extname(entryName).toLowerCase()
+    if (!['.jpg', '.jpeg', '.webp', '.avif'].includes(extension)) {
+      return
+    }
+
+    unlinkSync(path.resolve(projectOutputDir, entryName))
+  })
 }
 
 async function run() {
   const sharp = await loadSharpOrThrow()
+  const cliOptions = parseCliOptions()
 
   const content = JSON.parse(readFileSync(projectContentPath, 'utf8'))
   if (!Array.isArray(content)) {
@@ -157,27 +271,49 @@ async function run() {
   let totalOutputBytes = 0
   let processedSlots = 0
 
-  for (const project of content) {
+  const selectedProjects = content.filter((project) => {
+    if (!project || typeof project !== 'object' || typeof project.slug !== 'string') {
+      return false
+    }
+
+    if (!cliOptions.project) {
+      return true
+    }
+
+    return project.slug === cliOptions.project
+  })
+
+  if (cliOptions.project && selectedProjects.length === 0) {
+    throw new Error(`Project "${cliOptions.project}" not found in content JSON.`)
+  }
+
+  const activeSlots = cliOptions.slots ?? slots
+
+  for (const project of selectedProjects) {
     if (!project || typeof project !== 'object' || typeof project.slug !== 'string') {
       continue
     }
 
     const projectSlug = project.slug
     const projectOutputDir = path.resolve(generatedRoot, projectSlug)
-    ensureDir(projectOutputDir)
+    const slotSources = activeSlots
+      .map((slot) => ({ slot, sourcePath: resolveRawSource(projectSlug, slot) }))
+      .filter((entry) => entry.sourcePath !== null)
 
-    // Replace only the project's generated variants to avoid stale files.
-    rmSync(projectOutputDir, { recursive: true, force: true })
+    // Keep existing generated variants when no new raw sources are present.
+    if (slotSources.length === 0) {
+      console.log(`Skipping ${projectSlug}: no raw slot images found.`)
+      continue
+    }
+
     ensureDir(projectOutputDir)
 
     const projectArchiveDir = path.resolve(archiveRoot, projectSlug)
     ensureDir(projectArchiveDir)
 
-    for (const slot of slots) {
-      const sourcePath = resolveRawSource(projectSlug, slot)
-      if (!sourcePath) {
-        continue
-      }
+    for (const { slot, sourcePath } of slotSources) {
+      // Replace only this slot's generated variants, keep other slots intact.
+      removeExistingGeneratedSlotFiles(projectOutputDir, slot)
 
       const sourceFileName = path.basename(sourcePath)
       const archiveTarget = path.resolve(projectArchiveDir, sourceFileName)
@@ -191,7 +327,7 @@ async function run() {
       processedSlots += 1
 
       console.log(
-        `${projectSlug}/${slot} (${result.width}x${result.height}) ${formatMegabytes(
+        `${projectSlug}/${slot} [${result.mode}] (${result.width}x${result.height}) ${formatMegabytes(
           result.inputBytes,
         )} -> ${formatMegabytes(result.outputBytes)}`,
       )

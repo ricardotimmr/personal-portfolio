@@ -81,6 +81,23 @@ What it does:
   - `content/projects/archive/<slug>/`
 - Enforces source limits (size and dimensions).
 
+Optional targeted updates:
+
+```bash
+# Optimize one project only
+npm run optimize:projects -- --project my-new-project
+
+# Optimize one slot only for one project
+npm run optimize:projects -- --project my-new-project --slot detail-03
+
+# Optimize multiple slots only for one project
+npm run optimize:projects -- --project my-new-project --slot thumbnail,detail-01
+```
+
+Notes:
+- The optimizer replaces only the targeted slot variants for the project.
+- Other existing generated slots remain untouched.
+
 ## 4) Verify in app
 
 ```bash

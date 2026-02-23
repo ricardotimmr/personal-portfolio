@@ -28,5 +28,3 @@ content/projects/raw/*
 !content/projects/raw/.gitkeep
 content/projects/archive/*
 !content/projects/archive/.gitkeep
-src/assets/projects/generated/*
-!src/assets/projects/generated/.gitkeep
