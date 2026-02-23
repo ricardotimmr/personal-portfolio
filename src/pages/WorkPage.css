@@ -120,18 +120,18 @@
 }
 
 .work-project__media:hover .work-project-action__outer,
-.work-project__media:focus-within .work-project-action__outer {
+.work-project__media:focus-visible .work-project-action__outer {
   transform: translate(-50%, -50%) rotate(90deg) scale(2);
 }
 
 .work-project__media:hover .work-project-action__inner,
-.work-project__media:focus-within .work-project-action__inner {
+.work-project__media:focus-visible .work-project-action__inner {
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
 }
 
 .work-project__media:hover .work-project-action__text,
-.work-project__media:focus-within .work-project-action__text {
+.work-project__media:focus-visible .work-project-action__text {
   transform: translateY(0%);
   opacity: 1;
 }
