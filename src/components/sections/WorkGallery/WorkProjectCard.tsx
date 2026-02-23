@@ -1,16 +1,23 @@
 import { Link } from 'react-router-dom'
+import type { MouseEventHandler } from 'react'
 import ResponsiveImage from '../../common/ResponsiveImage'
 import { type ProjectRecord } from '../../../data/projects'
 
 type WorkProjectCardProps = {
   project: ProjectRecord
   onImageLoad: () => void
+  onProjectClick: MouseEventHandler<HTMLAnchorElement>
 }
 
-function WorkProjectCard({ project, onImageLoad }: WorkProjectCardProps) {
+function WorkProjectCard({ project, onImageLoad, onProjectClick }: WorkProjectCardProps) {
   return (
     <article className="work-project">
-      <Link className="work-project__media" to={`/work/${project.slug}`} aria-label={`Open ${project.title}`}>
+      <Link
+        className="work-project__media"
+        to={`/work/${project.slug}`}
+        aria-label={`Open ${project.title}`}
+        onClick={onProjectClick}
+      >
         <ResponsiveImage
           className="work-project__image"
           image={project.thumbnailImage}
