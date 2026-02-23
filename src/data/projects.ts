@@ -1,33 +1,92 @@
+import projectContent from '../content/projects/projects.json'
+
 export type ProjectOrientation = 'landscape' | 'portrait'
+
+export type ResponsiveProjectImage = {
+  alt: string
+  src: string
+  jpegSrcSet?: string
+  webpSrcSet?: string
+  avifSrcSet?: string
+  sizes: string
+}
+
+export type ProjectNarrativeContent = {
+  overviewHeadline: string
+  overviewMeta: string
+  processHeadline: string
+  processMeta: string
+}
 
 export type ProjectRecord = {
   id: string
   slug: string
   title: string
-  imageSrc: string
   orientation: ProjectOrientation
   description: string
   roles: string[]
   visitUrl?: string
+  imageSrc: string
+  thumbnailImage: ResponsiveProjectImage
+  heroImage: ResponsiveProjectImage
+  detailImages: [ResponsiveProjectImage, ResponsiveProjectImage, ResponsiveProjectImage, ResponsiveProjectImage]
+  narrative: ProjectNarrativeContent
 }
 
-type ResolvedImageEntry = {
-  key: string
-  src: string
+type ProjectContentRecord = {
+  id: string
+  slug: string
+  title: string
   orientation: ProjectOrientation
+  description: string
+  roles: string[]
+  visitUrl?: string
+  detail: ProjectNarrativeContent
+  assets: {
+    folder: string
+    fallbackThumbnail: string
+    fallbackDetails: [string, string, string, string]
+  }
 }
 
-const horizontalModules = import.meta.glob('../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}', {
+type ProjectImageSlot = 'thumbnail' | 'detail-01' | 'detail-02' | 'detail-03' | 'detail-04'
+
+type GeneratedVariant = {
+  width: number
+  src: string
+}
+
+type GeneratedVariantSet = {
+  avif: GeneratedVariant[]
+  webp: GeneratedVariant[]
+  jpeg: GeneratedVariant[]
+}
+
+const thumbnailSizes = '(max-width: 900px) 88vw, 520px'
+const detailSizes = '(max-width: 900px) 94vw, 1600px'
+
+const generatedModules = import.meta.glob('../assets/projects/generated/**/*.{avif,webp,jpg,jpeg}', {
   eager: true,
   import: 'default',
 }) as Record<string, string>
 
-const verticalModules = import.meta.glob('../assets/projects/vertical/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>
+const fallbackHorizontalModules = import.meta.glob(
+  '../assets/projects/horizontal/*.{png,jpg,jpeg,webp,avif}',
+  {
+    eager: true,
+    import: 'default',
+  },
+) as Record<string, string>
 
-const optimizedHorizontalModules = import.meta.glob(
+const fallbackVerticalModules = import.meta.glob(
+  '../assets/projects/vertical/*.{png,jpg,jpeg,webp,avif}',
+  {
+    eager: true,
+    import: 'default',
+  },
+) as Record<string, string>
+
+const fallbackOptimizedHorizontalModules = import.meta.glob(
   '../assets/projects-optimized/horizontal/*.{png,jpg,jpeg,webp,avif}',
   {
     eager: true,
@@ -35,7 +94,7 @@ const optimizedHorizontalModules = import.meta.glob(
   },
 ) as Record<string, string>
 
-const optimizedVerticalModules = import.meta.glob(
+const fallbackOptimizedVerticalModules = import.meta.glob(
   '../assets/projects-optimized/vertical/*.{png,jpg,jpeg,webp,avif}',
   {
     eager: true,
@@ -43,119 +102,215 @@ const optimizedVerticalModules = import.meta.glob(
   },
 ) as Record<string, string>
 
-const PROJECT_ROLES = [
-  ['Frontend Developer', 'UI Designer'],
-  ['Product Designer', 'Frontend Developer'],
-  ['Interaction Designer', 'UI Engineer'],
-  ['Frontend Developer', 'Design Systems'],
-  ['UX Designer', 'Frontend Developer'],
-  ['Design Engineer', 'Interaction Designer'],
-  ['UI Designer', 'Motion Designer'],
-  ['Frontend Engineer', 'Accessibility Lead'],
-]
+const generatedVariantIndex = buildGeneratedVariantIndex(generatedModules)
+const fallbackSourceByFileName = buildFallbackSourceMap()
 
-function createProjectCopy(index: number) {
-  const projectNumber = String(index + 1).padStart(2, '0')
+function buildGeneratedVariantIndex(modules: Record<string, string>) {
+  const index = new Map<string, GeneratedVariantSet>()
 
-  return `Project ${projectNumber} balances visual restraint, clear interaction pacing, and reliable implementation for polished, high-quality digital product experiences.`
+  Object.entries(modules).forEach(([modulePath, source]) => {
+    const match = modulePath.match(
+      /\.\.\/assets\/projects\/generated\/([^/]+)\/(thumbnail|detail-0[1-4])-w(\d+)\.(avif|webp|jpe?g)$/,
+    )
+
+    if (!match) {
+      return
+    }
+
+    const [, folder, slot, widthText, format] = match
+    const width = Number.parseInt(widthText, 10)
+    if (!Number.isFinite(width)) {
+      return
+    }
+
+    const key = `${folder}::${slot}`
+    const existing =
+      index.get(key) ?? {
+        avif: [],
+        webp: [],
+        jpeg: [],
+      }
+
+    const variant = { width, src: source }
+    if (format === 'avif') {
+      existing.avif.push(variant)
+    } else if (format === 'webp') {
+      existing.webp.push(variant)
+    } else {
+      existing.jpeg.push(variant)
+    }
+
+    index.set(key, existing)
+  })
+
+  index.forEach((entry) => {
+    entry.avif.sort((a, b) => a.width - b.width)
+    entry.webp.sort((a, b) => a.width - b.width)
+    entry.jpeg.sort((a, b) => a.width - b.width)
+  })
+
+  return index
 }
 
-function createProjectRoles(index: number) {
-  return PROJECT_ROLES[index % PROJECT_ROLES.length]
-}
+function buildFallbackSourceMap() {
+  const result = new Map<string, string>()
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
-function resolveImageEntries(
-  originalModules: Record<string, string>,
-  optimizedModules: Record<string, string>,
-  optimizedBasePath: string,
-  orientation: ProjectOrientation,
-) {
-  return Object.entries(originalModules)
-    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-    .map(([originalPath, originalSource]) => {
-      const fileName = originalPath.split('/').at(-1)
+  const register = (modules: Record<string, string>) => {
+    Object.entries(modules).forEach(([modulePath, source]) => {
+      const fileName = modulePath.split('/').at(-1)
       if (!fileName) {
-        return null
+        return
       }
 
-      const optimizedPath = `${optimizedBasePath}/${fileName}`
-      return {
-        key: slugify(fileName),
-        src: optimizedModules[optimizedPath] ?? originalSource,
-        orientation,
-      }
+      result.set(fileName, source)
     })
-    .filter((entry): entry is ResolvedImageEntry => entry !== null)
+  }
+
+  register(fallbackHorizontalModules)
+  register(fallbackVerticalModules)
+  register(fallbackOptimizedHorizontalModules)
+  register(fallbackOptimizedVerticalModules)
+
+  return result
 }
 
-const horizontalEntries = resolveImageEntries(
-  horizontalModules,
-  optimizedHorizontalModules,
-  '../assets/projects-optimized/horizontal',
-  'landscape',
-)
+function toSrcSet(variants: GeneratedVariant[]) {
+  if (variants.length === 0) {
+    return undefined
+  }
 
-const verticalEntries = resolveImageEntries(
-  verticalModules,
-  optimizedVerticalModules,
-  '../assets/projects-optimized/vertical',
-  'portrait',
-)
+  return variants.map((variant) => `${variant.src} ${variant.width}w`).join(', ')
+}
+
+function resolveProjectImage(
+  folder: string,
+  slot: ProjectImageSlot,
+  fallbackFileName: string,
+  sizes: string,
+  alt: string,
+): ResponsiveProjectImage {
+  const generated = generatedVariantIndex.get(`${folder}::${slot}`)
+  const fallbackSource = fallbackSourceByFileName.get(fallbackFileName)
+
+  const jpegSource = generated?.jpeg.at(-1)?.src ?? fallbackSource
+  const webpSrcSet = toSrcSet(generated?.webp ?? [])
+  const avifSrcSet = toSrcSet(generated?.avif ?? [])
+  const jpegSrcSet = toSrcSet(generated?.jpeg ?? [])
+
+  if (!jpegSource) {
+    throw new Error(`Missing fallback image source for "${fallbackFileName}".`)
+  }
+
+  return {
+    alt,
+    src: jpegSource,
+    jpegSrcSet,
+    webpSrcSet,
+    avifSrcSet,
+    sizes,
+  }
+}
+
+function normalizeVisitUrl(value: string | undefined) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : undefined
+}
+
+function isProjectRecord(value: unknown): value is ProjectContentRecord {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const candidate = value as Partial<ProjectContentRecord>
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.slug === 'string' &&
+    typeof candidate.title === 'string' &&
+    (candidate.orientation === 'landscape' || candidate.orientation === 'portrait') &&
+    Array.isArray(candidate.roles) &&
+    typeof candidate.description === 'string' &&
+    Boolean(candidate.detail) &&
+    Boolean(candidate.assets)
+  )
+}
 
 function buildProjects() {
-  const hasHorizontal = horizontalEntries.length > 0
-  const hasVertical = verticalEntries.length > 0
-
-  if (!hasHorizontal && !hasVertical) {
-    return []
+  const input = projectContent as unknown
+  if (!Array.isArray(input)) {
+    throw new Error('Project content must be an array.')
   }
 
-  const mixedEntries: ResolvedImageEntry[] = []
+  return input.filter(isProjectRecord).map((project) => {
+    const thumbnailImage = resolveProjectImage(
+      project.assets.folder,
+      'thumbnail',
+      project.assets.fallbackThumbnail,
+      thumbnailSizes,
+      `${project.title} thumbnail`,
+    )
 
-  if (!hasHorizontal) {
-    mixedEntries.push(...verticalEntries)
-  } else if (!hasVertical) {
-    mixedEntries.push(...horizontalEntries)
-  } else {
-    let horizontalIndex = 0
-    let verticalIndex = 0
-    const totalCount = horizontalEntries.length + verticalEntries.length
+    const heroImage = resolveProjectImage(
+      project.assets.folder,
+      'thumbnail',
+      project.assets.fallbackThumbnail,
+      detailSizes,
+      `${project.title} hero image`,
+    )
 
-    for (let index = 0; index < totalCount; index += 1) {
-      const shouldUseHorizontal =
-        (index % 2 === 0 && horizontalIndex < horizontalEntries.length) ||
-        verticalIndex >= verticalEntries.length
-
-      if (shouldUseHorizontal) {
-        mixedEntries.push(horizontalEntries[horizontalIndex])
-        horizontalIndex += 1
-      } else {
-        mixedEntries.push(verticalEntries[verticalIndex])
-        verticalIndex += 1
-      }
-    }
-  }
-
-  return mixedEntries.map((entry, index) => {
-    const projectNumber = String(index + 1).padStart(2, '0')
+    const detailImages = [
+      resolveProjectImage(
+        project.assets.folder,
+        'detail-01',
+        project.assets.fallbackDetails[0],
+        detailSizes,
+        `${project.title} detail visual 1`,
+      ),
+      resolveProjectImage(
+        project.assets.folder,
+        'detail-02',
+        project.assets.fallbackDetails[1],
+        detailSizes,
+        `${project.title} detail visual 2`,
+      ),
+      resolveProjectImage(
+        project.assets.folder,
+        'detail-03',
+        project.assets.fallbackDetails[2],
+        detailSizes,
+        `${project.title} detail visual 3`,
+      ),
+      resolveProjectImage(
+        project.assets.folder,
+        'detail-04',
+        project.assets.fallbackDetails[3],
+        detailSizes,
+        `${project.title} detail visual 4`,
+      ),
+    ] as [
+      ResponsiveProjectImage,
+      ResponsiveProjectImage,
+      ResponsiveProjectImage,
+      ResponsiveProjectImage,
+    ]
 
     return {
-      id: `project-${index}`,
-      slug: `${projectNumber}-${entry.key}`,
-      title: `PROJECT ${projectNumber}`,
-      imageSrc: entry.src,
-      orientation: entry.orientation,
-      description: createProjectCopy(index),
-      roles: createProjectRoles(index),
-      visitUrl: undefined,
+      id: project.id,
+      slug: project.slug,
+      title: project.title,
+      orientation: project.orientation,
+      description: project.description,
+      roles: [...project.roles],
+      visitUrl: normalizeVisitUrl(project.visitUrl),
+      imageSrc: thumbnailImage.src,
+      thumbnailImage,
+      heroImage,
+      detailImages,
+      narrative: {
+        overviewHeadline: project.detail.overviewHeadline,
+        overviewMeta: project.detail.overviewMeta,
+        processHeadline: project.detail.processHeadline,
+        processMeta: project.detail.processMeta,
+      },
     }
   })
 }

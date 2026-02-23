@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Project media pipeline (keep structure, ignore heavy originals/generated outputs)
+content/projects/raw/*
+!content/projects/raw/.gitkeep
+content/projects/archive/*
+!content/projects/archive/.gitkeep

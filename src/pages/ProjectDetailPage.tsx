@@ -1,5 +1,6 @@
 import { Navigate, useParams } from 'react-router-dom'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
+import ResponsiveImage from '../components/common/ResponsiveImage'
 import ProjectDetailHeader from '../components/sections/ProjectDetail/ProjectDetailHeader'
 import ProjectDetailMinimap from '../components/sections/ProjectDetail/ProjectDetailMinimap'
 import ProjectDetailNarrative from '../components/sections/ProjectDetail/ProjectDetailNarrative'
@@ -36,16 +37,17 @@ function ProjectDetailPage() {
       <div className="project-detail-content" ref={mainContentRef}>
         <section className="project-detail-section">
           <ProjectDetailHeader
+            title={project.title}
             description={project.description}
             roles={project.roles}
             visitUrl={project.visitUrl}
           />
 
           <figure className="project-detail-hero" ref={heroRef}>
-            <img src={project.imageSrc} alt="" className="project-detail-hero__image" />
+            <ResponsiveImage image={project.heroImage} className="project-detail-hero__image" />
           </figure>
 
-          <ProjectDetailNarrative />
+          <ProjectDetailNarrative narrative={project.narrative} detailImages={project.detailImages} />
         </section>
 
         <SiteFooter />

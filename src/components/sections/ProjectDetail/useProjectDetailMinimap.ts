@@ -66,17 +66,17 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
       const heroTopDoc = hero.getBoundingClientRect().top + window.scrollY
       const baseTop = Math.max(12, heroTopDoc)
       const minimapHeight = minimapFrame.clientHeight
-      const lastPlaceholder = source.querySelector(
+      const lastVisual = source.querySelector(
         '.project-detail-visual-stack:last-of-type .project-detail-visual:last-child',
       ) as HTMLElement | null
 
-      if (!lastPlaceholder) {
+      if (!lastVisual) {
         minimap.style.top = `${baseTop.toFixed(3)}px`
         return
       }
 
-      const lastPlaceholderBottomDoc = lastPlaceholder.getBoundingClientRect().bottom + window.scrollY
-      const clampedTop = Math.min(baseTop, lastPlaceholderBottomDoc - window.scrollY - minimapHeight)
+      const lastVisualBottomDoc = lastVisual.getBoundingClientRect().bottom + window.scrollY
+      const clampedTop = Math.min(baseTop, lastVisualBottomDoc - window.scrollY - minimapHeight)
       minimap.style.top = `${clampedTop.toFixed(3)}px`
     }
 

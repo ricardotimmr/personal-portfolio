@@ -12,7 +12,8 @@ import {
   GALLERY_SCROLL_MAX_WHEEL_DELTA,
   GALLERY_SCROLL_WHEEL_DRAG_FACTOR,
 } from '../../navigation/SmoothScroll/scrollPhysics'
-import { PROJECTS } from '../../../data/projects'
+import { type ResponsiveProjectImage, PROJECTS } from '../../../data/projects'
+import ResponsiveImage from '../../common/ResponsiveImage'
 import './GallerySection.css'
 
 type SlideOrientation = 'landscape' | 'portrait'
@@ -20,7 +21,7 @@ type SlideOrientation = 'landscape' | 'portrait'
 type GallerySlide = {
   id: string
   orientation: SlideOrientation
-  imageSrc: string
+  image: ResponsiveProjectImage
   slug: string
 }
 
@@ -53,7 +54,7 @@ function buildSlides(): GallerySlide[] {
   return PROJECTS.map((project) => ({
     id: project.id,
     orientation: project.orientation,
-    imageSrc: project.imageSrc,
+    image: project.thumbnailImage,
     slug: project.slug,
   }))
 }
@@ -93,7 +94,7 @@ function GallerySection() {
 
   const gallerySlides = useMemo(() => buildSlides(), [])
   const uniqueImageSources = useMemo(
-    () => Array.from(new Set(gallerySlides.map((slide) => slide.imageSrc))),
+    () => Array.from(new Set(gallerySlides.map((slide) => slide.image.src))),
     [gallerySlides],
   )
 
@@ -646,9 +647,8 @@ function GallerySection() {
                   className={`gallery-card gallery-card--${slide.orientation}`}
                   data-project-slug={slide.slug}
                 >
-                  <img
-                    src={slide.imageSrc}
-                    alt=""
+                  <ResponsiveImage
+                    image={slide.image}
                     loading="eager"
                     decoding="auto"
                     draggable={false}

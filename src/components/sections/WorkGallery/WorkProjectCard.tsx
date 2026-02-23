@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { MouseEventHandler } from 'react'
+import ResponsiveImage from '../../common/ResponsiveImage'
 import { type ProjectRecord } from '../../../data/projects'
 
 type WorkProjectCardProps = {
@@ -17,10 +18,9 @@ function WorkProjectCard({ project, onImageLoad, onProjectClick }: WorkProjectCa
         aria-label={`Open ${project.title}`}
         onClick={onProjectClick}
       >
-        <img
+        <ResponsiveImage
           className="work-project__image"
-          src={project.imageSrc}
-          alt=""
+          image={project.thumbnailImage}
           loading="eager"
           onLoad={onImageLoad}
         />
