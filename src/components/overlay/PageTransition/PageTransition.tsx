@@ -54,6 +54,10 @@ function createVelocityEase() {
 
 const INCOMING_EASE = createVelocityEase()
 
+type TransitionWindow = Window & {
+  __projectOutgoingDimOpacity?: number
+}
+
 type PageTransitionProps = {
   renderRoute: (location: Location) => ReactNode
   onTransitioningChange?: (isTransitioning: boolean) => void
@@ -74,6 +78,7 @@ function PageTransition({
   const [outgoingLocation, setOutgoingLocation] = useState<Location | null>(null)
   const [incomingStartY, setIncomingStartY] = useState(getIncomingStartY)
   const [outgoingScrollY, setOutgoingScrollY] = useState(0)
+  const [outgoingDimOpacity, setOutgoingDimOpacity] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const incomingLocationRef = useRef<Location | null>(null)
   const isTransitioningRef = useRef(false)
@@ -97,6 +102,15 @@ function PageTransition({
 
   const startTransition = useCallback(
     (nextLocation: Location) => {
+      const transitionWindow = window as TransitionWindow
+      const pendingDimOpacity = transitionWindow.__projectOutgoingDimOpacity
+      if (typeof pendingDimOpacity === 'number' && Number.isFinite(pendingDimOpacity)) {
+        setOutgoingDimOpacity(Math.max(0, Math.min(1, pendingDimOpacity)))
+      } else {
+        setOutgoingDimOpacity(0)
+      }
+      delete transitionWindow.__projectOutgoingDimOpacity
+
       setOutgoingScrollY(window.scrollY)
       setIncomingStartY(getIncomingStartY())
       setOutgoingLocation(displayLocation)
@@ -121,6 +135,7 @@ function PageTransition({
       setDisplayLocation(completedLocation)
       setIncomingLocation(null)
       setOutgoingLocation(null)
+      setOutgoingDimOpacity(0)
       setIsTransitioning(false)
 
       const queued = pendingLocationRef.current
@@ -160,13 +175,20 @@ function PageTransition({
             <motion.div
               className="page-transition__outgoing-content"
               initial={{ y: 0, scale: 1, opacity: 1 }}
-              animate={{ y: 50, scale: 0.92, opacity: 0.94 }}
+              animate={{ y: 50, scale: 0.92, opacity: 1 }}
               transition={{
                 duration: PAGE_OUTGOING_DURATION_S,
                 ease: OUTGOING_EASE,
               }}
             >
               {renderRoute(outgoingLocation)}
+              {outgoingDimOpacity > 0 ? (
+                <div
+                  className="page-transition__outgoing-dim"
+                  style={{ opacity: outgoingDimOpacity.toFixed(3) }}
+                  aria-hidden="true"
+                />
+              ) : null}
             </motion.div>
           </div>
         </div>
