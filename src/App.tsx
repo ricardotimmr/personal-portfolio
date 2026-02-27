@@ -11,6 +11,8 @@ import { useTheme } from './hooks/useTheme'
 import FreetimePage from './pages/FreetimePage'
 import IndexPage from './pages/IndexPage'
 import InfoPage from './pages/InfoPage'
+import LegalNoticePage from './pages/LegalNoticePage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import ProjectDetailPage from './pages/ProjectDetailPage'
 import WorkPage from './pages/WorkPage'
 import './App.css'
@@ -29,6 +31,8 @@ function AppRoutes({ routeLocation }: AppRoutesProps) {
       <Route path="/work/:projectSlug" element={<ProjectDetailPage />} />
       <Route path="/freetime" element={<FreetimePage />} />
       <Route path="/info" element={<InfoPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+      <Route path="/legal-notice" element={<LegalNoticePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

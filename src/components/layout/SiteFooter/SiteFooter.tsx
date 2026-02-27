@@ -50,6 +50,18 @@ function SiteFooter() {
           <ArrowRight className="footer-link__icon" size={32} />
         </a>
 
+        <nav className="footer-legal" aria-label="Legal">
+          <Link className="footer-legal__link" to="/privacy-policy">
+            Privacy Policy
+          </Link>
+          <span className="footer-legal__divider" aria-hidden="true">
+            ·
+          </span>
+          <Link className="footer-legal__link" to="/legal-notice">
+            Legal Notice
+          </Link>
+        </nav>
+
         <button
           className="footer-scroll-top"
           type="button"
