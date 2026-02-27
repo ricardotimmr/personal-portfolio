@@ -21,14 +21,15 @@ const SHOW_WIP_BANNER = true
 
 type AppRoutesProps = {
   routeLocation: Location
+  isPageTransitioning: boolean
 }
 
-function AppRoutes({ routeLocation }: AppRoutesProps) {
+function AppRoutes({ routeLocation, isPageTransitioning }: AppRoutesProps) {
   return (
     <Routes location={routeLocation}>
       <Route path="/" element={<IndexPage />} />
       <Route path="/work" element={<WorkPage />} />
-      <Route path="/work/:projectSlug" element={<ProjectDetailPage />} />
+      <Route path="/work/:projectSlug" element={<ProjectDetailPage isPageTransitioning={isPageTransitioning} />} />
       <Route path="/freetime" element={<FreetimePage />} />
       <Route path="/info" element={<InfoPage />} />
       <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
@@ -77,7 +78,9 @@ function App() {
       ) : null}
 
       <PageTransition
-        renderRoute={(routeLocation) => <AppRoutes routeLocation={routeLocation} />}
+        renderRoute={(routeLocation) => (
+          <AppRoutes routeLocation={routeLocation} isPageTransitioning={isPageTransitioning} />
+        )}
         onTransitioningChange={setIsPageTransitioning}
         onDisplayedLocationKeyChange={setDisplayedLocationKey}
       />
