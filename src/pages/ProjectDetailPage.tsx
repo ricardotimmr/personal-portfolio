@@ -278,13 +278,13 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
         </section>
         <nav className="project-detail-legal" aria-label="Legal">
           <Link className="project-detail-legal__link" to="/privacy-policy">
-            Privacy Policy
+            Datenschutz
           </Link>
           <span className="project-detail-legal__divider" aria-hidden="true">
             ·
           </span>
           <Link className="project-detail-legal__link" to="/legal-notice">
-            Legal Notice
+            Impressum
           </Link>
         </nav>
       </div>

@@ -52,13 +52,13 @@ function SiteFooter() {
 
         <nav className="footer-legal" aria-label="Legal">
           <Link className="footer-legal__link" to="/privacy-policy">
-            Privacy Policy
+            Datenschutz
           </Link>
           <span className="footer-legal__divider" aria-hidden="true">
             ·
           </span>
           <Link className="footer-legal__link" to="/legal-notice">
-            Legal Notice
+            Impressum
           </Link>
         </nav>
 
