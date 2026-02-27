@@ -24,7 +24,7 @@ function SiteFooter() {
           className="footer-link footer-link--left"
           href="https://www.linkedin.com/in/ricardo-timm-1652811b0/"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           <span className="footer-link-swap">
             <span className="footer-link-swap__primary">LINKEDIN</span>
@@ -39,7 +39,7 @@ function SiteFooter() {
           className="footer-link footer-link--right"
           href="https://github.com/ricardotimmr"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           <span className="footer-link-swap">
             <span className="footer-link-swap__primary">GITHUB</span>
