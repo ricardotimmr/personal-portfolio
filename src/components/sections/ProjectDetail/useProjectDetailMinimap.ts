@@ -25,7 +25,6 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
     }
 
     let rafId: number | null = null
-    let hasActivatedMinimap = false
 
     const clone = source.cloneNode(true) as HTMLElement
     clone.classList.add('project-scroll-minimap__clone')
@@ -100,10 +99,6 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
       updateGeometry()
       updateMinimapPosition()
       updateViewportMarker()
-      if (!hasActivatedMinimap) {
-        hasActivatedMinimap = true
-        minimap.classList.add('is-ready')
-      }
     }
 
     const requestUpdate = () => {
@@ -117,7 +112,6 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
     const resizeObserver = new ResizeObserver(requestUpdate)
     resizeObserver.observe(source)
 
-    minimap.classList.remove('is-ready')
     window.addEventListener('scroll', requestUpdate, { passive: true })
     window.addEventListener('resize', requestUpdate)
     requestUpdate()

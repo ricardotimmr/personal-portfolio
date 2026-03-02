@@ -86,6 +86,7 @@
 .page-transition__outgoing-layer .project-scroll-minimap {
   opacity: 1 !important;
   transform: translate3d(0, 0, 0) !important;
+  filter: blur(0) !important;
   transition: none !important;
 }
 
@@ -93,6 +94,13 @@
   animation: none !important;
   opacity: 1 !important;
   transform: translate3d(0, 0, 0) !important;
+}
+
+.page-transition__incoming-layer .project-scroll-minimap {
+  opacity: 0 !important;
+  transform: translate3d(0, 8px, 0) !important;
+  filter: blur(6px) !important;
+  transition: none !important;
 }
 
 .page-transition__reveal-line {

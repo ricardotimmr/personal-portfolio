@@ -31,20 +31,23 @@
   position: fixed;
   top: 120px;
   right: clamp(18px, 6.25vw, 90px);
-  transform: translate3d(0, 6px, 0);
+  transform: translate3d(0, 8px, 0);
   z-index: 24;
   pointer-events: none;
   opacity: 0;
-  will-change: opacity, transform;
+  filter: blur(6px);
+  will-change: opacity, transform, filter;
   transition:
-    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 1960ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 2360ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 2360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .project-scroll-minimap.is-ready {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  transition-delay: 30ms;
+  filter: blur(0);
+  transition-delay: 240ms;
 }
 
 .project-scroll-minimap__frame {
