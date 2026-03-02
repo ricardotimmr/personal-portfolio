@@ -83,6 +83,18 @@
   backface-visibility: hidden;
 }
 
+.page-transition__outgoing-layer .project-scroll-minimap {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) !important;
+  transition: none !important;
+}
+
+.page-transition__outgoing-layer .project-scroll-minimap__frame {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
 .page-transition__reveal-line {
   display: block;
 }

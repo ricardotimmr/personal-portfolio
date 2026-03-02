@@ -25,10 +25,25 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
     }
 
     let rafId: number | null = null
+    let hasActivatedMinimap = false
 
     const clone = source.cloneNode(true) as HTMLElement
     clone.classList.add('project-scroll-minimap__clone')
     clone.setAttribute('aria-hidden', 'true')
+
+    // The page-transition text reveal uses transient inline opacity/blur/transform styles.
+    // If we snapshot those into the minimap clone, text can appear artificially lighter
+    // until the next clone refresh. Strip only those transient properties.
+    clone.querySelectorAll<HTMLElement>('[style]').forEach((element) => {
+      element.style.removeProperty('opacity')
+      element.style.removeProperty('filter')
+      element.style.removeProperty('transform')
+      element.style.removeProperty('will-change')
+      if ((element.getAttribute('style') ?? '').trim().length === 0) {
+        element.removeAttribute('style')
+      }
+    })
+
     minimapHost.innerHTML = ''
     minimapHost.append(clone)
 
@@ -85,6 +100,10 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
       updateGeometry()
       updateMinimapPosition()
       updateViewportMarker()
+      if (!hasActivatedMinimap) {
+        hasActivatedMinimap = true
+        minimap.classList.add('is-ready')
+      }
     }
 
     const requestUpdate = () => {
@@ -98,6 +117,7 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
     const resizeObserver = new ResizeObserver(requestUpdate)
     resizeObserver.observe(source)
 
+    minimap.classList.remove('is-ready')
     window.addEventListener('scroll', requestUpdate, { passive: true })
     window.addEventListener('resize', requestUpdate)
     requestUpdate()
