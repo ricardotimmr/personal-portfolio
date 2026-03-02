@@ -29,11 +29,21 @@ const TEXT_REVEAL_EXCLUDE_SELECTOR =
 const TEXT_REVEAL_TRIGGER_PROGRESS = 0.7
 const TEXT_REVEAL_BLUR_PX = 6
 const TEXT_REVEAL_OFFSET_Y = 6
-const TEXT_REVEAL_DURATION_S = 0.86
+const TEXT_REVEAL_DURATION_S = 1.05
 const TEXT_REVEAL_STAGGER_S = 0.052
+const TEXT_REVEAL_HANDOFF_DURATION_MULTIPLIER = 1.45
+const TEXT_REVEAL_HANDOFF_MIN_REMAINING = 0.4
+const TEXT_REVEAL_HANDOFF_MIN_DURATION_S = 0.28
 const TEXT_REVEAL_MAX_TARGETS = 32
 const TEXT_REVEAL_MAX_ANIMATED_NODES = 96
 const TEXT_REVEAL_LINE_TOP_TOLERANCE_PX = 3
+const TEXT_REVEAL_START_DELAY_S = 0.02
+
+type TextRevealSnapshot = {
+  blur: number
+  opacity: number
+  y: number
+}
 
 function splitElementIntoLineTargets(element: HTMLElement): HTMLElement[] | null {
   if (element.childElementCount > 0) {
@@ -105,6 +115,105 @@ function splitElementIntoLineTargets(element: HTMLElement): HTMLElement[] | null
   return lineTargets.length > 0 ? lineTargets : null
 }
 
+function parseBlurPx(filterValue: string): number {
+  const match = /blur\(([-\d.]+)px\)/.exec(filterValue)
+  if (!match) {
+    return 0
+  }
+  const parsed = Number.parseFloat(match[1] ?? '0')
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function remapSnapshotsByRelativeIndex(
+  snapshots: TextRevealSnapshot[],
+  targetCount: number,
+): TextRevealSnapshot[] {
+  if (targetCount <= 0 || snapshots.length === 0) {
+    return []
+  }
+  if (snapshots.length === targetCount) {
+    return snapshots
+  }
+  if (snapshots.length === 1) {
+    return Array.from({ length: targetCount }, () => snapshots[0])
+  }
+
+  const sourceLastIndex = snapshots.length - 1
+  const targetLastIndex = Math.max(1, targetCount - 1)
+
+  return Array.from({ length: targetCount }, (_, targetIndex) => {
+    const normalized = targetIndex / targetLastIndex
+    const sourcePosition = normalized * sourceLastIndex
+    const sourceLowerIndex = Math.floor(sourcePosition)
+    const sourceUpperIndex = Math.min(sourceLastIndex, sourceLowerIndex + 1)
+    const weight = sourcePosition - sourceLowerIndex
+    const lower = snapshots[sourceLowerIndex]
+    const upper = snapshots[sourceUpperIndex]
+
+    return {
+      opacity: lower.opacity + (upper.opacity - lower.opacity) * weight,
+      y: lower.y + (upper.y - lower.y) * weight,
+      blur: lower.blur + (upper.blur - lower.blur) * weight,
+    }
+  })
+}
+
+function collectRevealTargets(root: HTMLElement) {
+  const rawTextTargets = Array.from(root.querySelectorAll<HTMLElement>(TEXT_REVEAL_SELECTOR))
+  const textTargetEntries = rawTextTargets
+    .filter((element) => {
+      if (element.getAttribute('aria-hidden') === 'true') {
+        return false
+      }
+      if (element.hasAttribute('hidden')) {
+        return false
+      }
+      if (element.matches(TEXT_REVEAL_EXCLUDE_SELECTOR) || element.closest(TEXT_REVEAL_EXCLUDE_SELECTOR)) {
+        return false
+      }
+      const computedStyle = window.getComputedStyle(element)
+      if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+        return false
+      }
+      if (element.matches(TEXT_REVEAL_MEDIA_SELECTOR)) {
+        return false
+      }
+      if (element.querySelector(TEXT_REVEAL_MEDIA_SELECTOR)) {
+        return false
+      }
+      if ((element.textContent ?? '').trim().length === 0) {
+        return false
+      }
+      const hasNestedRevealTarget = Array.from(element.children).some((child) =>
+        child.matches(TEXT_REVEAL_SELECTOR),
+      )
+      return !hasNestedRevealTarget
+    })
+    .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+    .filter(({ rect }) => rect.width > 0 && rect.height > 0)
+    .sort((first, second) => first.rect.top - second.rect.top)
+  const textTargets = textTargetEntries.slice(0, TEXT_REVEAL_MAX_TARGETS).map(({ element }) => element)
+
+  const lineRevealTargets: HTMLElement[] = []
+  const fallbackTargets: HTMLElement[] = []
+  textTargets.forEach((target) => {
+    const lineTargets = splitElementIntoLineTargets(target)
+    if (!lineTargets || lineTargets.length === 0) {
+      fallbackTargets.push(target)
+      return
+    }
+    lineRevealTargets.push(...lineTargets)
+  })
+
+  const animatedTargets = [...lineRevealTargets, ...fallbackTargets]
+    .map((target) => ({ target, top: target.getBoundingClientRect().top }))
+    .sort((first, second) => first.top - second.top)
+    .slice(0, TEXT_REVEAL_MAX_ANIMATED_NODES)
+    .map(({ target }) => target)
+
+  return { animatedTargets }
+}
+
 gsap.registerPlugin(CustomEase)
 CustomEase.create(
   PAGE_EASE_NAME,
@@ -138,6 +247,7 @@ function PageTransition({
   const [outgoingScrollY, setOutgoingScrollY] = useState(0)
   const [outgoingDimOpacity, setOutgoingDimOpacity] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const currentContentRef = useRef<HTMLDivElement | null>(null)
   const incomingMotionRef = useRef<HTMLDivElement | null>(null)
   const outgoingMotionRef = useRef<HTMLDivElement | null>(null)
   const outgoingDimRef = useRef<HTMLDivElement | null>(null)
@@ -148,6 +258,8 @@ function PageTransition({
   const pendingLocationRef = useRef<Location | null>(null)
   const activeTransitionTargetKeyRef = useRef<string | null>(null)
   const incomingTweenRunIdRef = useRef(0)
+  const hasInitializedRevealRef = useRef(false)
+  const textRevealHandoffRef = useRef<{ key: string; snapshots: TextRevealSnapshot[] } | null>(null)
 
   useEffect(() => {
     incomingLocationRef.current = incomingLocation
@@ -334,58 +446,8 @@ function PageTransition({
       let slowFrameCount = 0
       let outgoingTween: gsap.core.Tween | null = null
       let hasTriggeredTextReveal = false
-      let incomingMotionComplete = false
-      let textRevealComplete = false
-      const rawTextTargets = Array.from(incomingElement.querySelectorAll<HTMLElement>(TEXT_REVEAL_SELECTOR))
-      const textTargetEntries = rawTextTargets
-        .filter((element) => {
-          if (element.getAttribute('aria-hidden') === 'true') {
-            return false
-          }
-          if (element.hasAttribute('hidden')) {
-            return false
-          }
-          if (element.matches(TEXT_REVEAL_EXCLUDE_SELECTOR) || element.closest(TEXT_REVEAL_EXCLUDE_SELECTOR)) {
-            return false
-          }
-          const computedStyle = window.getComputedStyle(element)
-          if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
-            return false
-          }
-          if (element.matches(TEXT_REVEAL_MEDIA_SELECTOR)) {
-            return false
-          }
-          if (element.querySelector(TEXT_REVEAL_MEDIA_SELECTOR)) {
-            return false
-          }
-          if ((element.textContent ?? '').trim().length === 0) {
-            return false
-          }
-          const hasNestedRevealTarget = Array.from(element.children).some((child) =>
-            child.matches(TEXT_REVEAL_SELECTOR),
-          )
-          return !hasNestedRevealTarget
-        })
-        .map((element) => ({ element, rect: element.getBoundingClientRect() }))
-        .filter(({ rect }) => rect.width > 0 && rect.height > 0)
-        .sort((first, second) => first.rect.top - second.rect.top)
-      const textTargets = textTargetEntries.slice(0, TEXT_REVEAL_MAX_TARGETS).map(({ element }) => element)
-      const lineRevealTargets: HTMLElement[] = []
-      const fallbackTargets: HTMLElement[] = []
-      textTargets.forEach((target) => {
-        const lineTargets = splitElementIntoLineTargets(target)
-        if (!lineTargets || lineTargets.length === 0) {
-          fallbackTargets.push(target)
-          return
-        }
-        lineRevealTargets.push(...lineTargets)
-      })
-
-      const revealTargets = [...lineRevealTargets, ...fallbackTargets]
-        .map((target) => ({ target, top: target.getBoundingClientRect().top }))
-        .sort((first, second) => first.top - second.top)
-        .slice(0, TEXT_REVEAL_MAX_ANIMATED_NODES)
-        .map(({ target }) => target)
+      const revealPlan = collectRevealTargets(incomingElement)
+      const revealTargets = revealPlan.animatedTargets
 
       if (revealTargets.length > 0) {
         gsap.set(revealTargets, {
@@ -394,64 +456,24 @@ function PageTransition({
           filter: prefersReducedMotion ? 'blur(0px)' : `blur(${TEXT_REVEAL_BLUR_PX}px)`,
           willChange: 'opacity,filter,transform',
         })
-      } else {
-        textRevealComplete = true
-      }
-
-      const completeTransition = () => {
-        if (!incomingMotionComplete || !textRevealComplete) {
-          return
-        }
-        gsap.set(incomingElement, { clearProps: 'transform,opacity,willChange' })
-        incomingElement.style.removeProperty('--incoming-content-opacity')
-        if (revealTargets.length > 0) {
-          gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
-        }
-        if (outgoingElement) {
-          gsap.set(outgoingElement, { clearProps: 'transform,willChange' })
-        }
-        if (outgoingDimElement) {
-          gsap.set(outgoingDimElement, { clearProps: 'opacity,willChange' })
-        }
-        if (outgoingTween) {
-          outgoingTween.kill()
-          outgoingTween = null
-        }
-        if (textRevealTween) {
-          textRevealTween.kill()
-          textRevealTween = null
-        }
-        if (incomingTweenRef.current === tween) {
-          incomingTweenRef.current = null
-        }
-        finishTransition(targetLocationKey)
       }
 
       const startTextReveal = () => {
-        if (hasTriggeredTextReveal) {
+        if (hasTriggeredTextReveal || revealTargets.length === 0) {
           return
         }
         hasTriggeredTextReveal = true
-
-        if (revealTargets.length === 0) {
-          textRevealComplete = true
-          completeTransition()
-          return
-        }
 
         textRevealTween = gsap.to(revealTargets, {
           opacity: 1,
           y: 0,
           filter: 'blur(0px)',
           duration: prefersReducedMotion ? 0.2 : TEXT_REVEAL_DURATION_S,
+          delay: prefersReducedMotion ? 0 : TEXT_REVEAL_START_DELAY_S,
           ease: prefersReducedMotion ? 'power1.out' : 'power2.out',
           stagger: prefersReducedMotion ? 0 : TEXT_REVEAL_STAGGER_S,
           onComplete: () => {
-            if (runId !== incomingTweenRunIdRef.current) {
-              return
-            }
-            textRevealComplete = true
-            completeTransition()
+            gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
           },
         })
       }
@@ -547,9 +569,42 @@ function PageTransition({
               contentOpacity: incomingElement.style.getPropertyValue('--incoming-content-opacity'),
             })
           }
-          incomingMotionComplete = true
           startTextReveal()
-          completeTransition()
+          if (hasTriggeredTextReveal && revealTargets.length > 0) {
+            const snapshots = revealTargets.map((target) => {
+              const opacityValue = Number(gsap.getProperty(target, 'opacity'))
+              const yValue = Number(gsap.getProperty(target, 'y'))
+              const filterValue = window.getComputedStyle(target).filter
+              return {
+                blur: parseBlurPx(filterValue),
+                opacity: Number.isFinite(opacityValue) ? Math.max(0, Math.min(1, opacityValue)) : 1,
+                y: Number.isFinite(yValue) ? yValue : 0,
+              }
+            })
+            textRevealHandoffRef.current = { key: targetLocationKey, snapshots }
+          } else {
+            textRevealHandoffRef.current = null
+          }
+          gsap.set(incomingElement, { clearProps: 'transform,opacity,willChange' })
+          incomingElement.style.removeProperty('--incoming-content-opacity')
+          if (outgoingElement) {
+            gsap.set(outgoingElement, { clearProps: 'transform,willChange' })
+          }
+          if (outgoingDimElement) {
+            gsap.set(outgoingDimElement, { clearProps: 'opacity,willChange' })
+          }
+          if (outgoingTween) {
+            outgoingTween.kill()
+            outgoingTween = null
+          }
+          if (textRevealTween) {
+            textRevealTween.kill()
+            textRevealTween = null
+          }
+          if (incomingTweenRef.current === tween) {
+            incomingTweenRef.current = null
+          }
+          finishTransition(targetLocationKey)
         },
       })
 
@@ -577,9 +632,105 @@ function PageTransition({
     }
   }, [finishTransition, incomingLocation, isTransitioning, outgoingDimOpacity])
 
+  useLayoutEffect(() => {
+    const currentElement = currentContentRef.current
+    if (!currentElement || isTransitioning) {
+      return
+    }
+
+    if (!hasInitializedRevealRef.current) {
+      hasInitializedRevealRef.current = true
+      return
+    }
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const revealTargets = collectRevealTargets(currentElement).animatedTargets
+
+    if (revealTargets.length === 0) {
+      textRevealHandoffRef.current = null
+      return
+    }
+
+    const handoff = textRevealHandoffRef.current
+    const handoffSnapshots = handoff && handoff.key === displayLocation.key ? handoff.snapshots : null
+    textRevealHandoffRef.current = null
+
+    if (prefersReducedMotion || !handoffSnapshots || handoffSnapshots.length === 0) {
+      gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+      return
+    }
+
+    const remappedSnapshots = remapSnapshotsByRelativeIndex(handoffSnapshots, revealTargets.length)
+    const baseOpacity = prefersReducedMotion ? 0 : 0.16
+    const handoffProgress = Math.max(
+      0,
+      Math.min(
+        1,
+        remappedSnapshots.reduce((sum, snapshot) => {
+          const normalized = (snapshot.opacity - baseOpacity) / Math.max(0.0001, 1 - baseOpacity)
+          return sum + Math.max(0, Math.min(1, normalized))
+        }, 0) / remappedSnapshots.length,
+      ),
+    )
+
+    revealTargets.forEach((target, index) => {
+      const snapshot = remappedSnapshots[index]
+      gsap.set(target, {
+        opacity: snapshot.opacity,
+        y: snapshot.y,
+        filter: `blur(${Math.max(0, snapshot.blur)}px)`,
+        willChange: 'opacity,filter,transform',
+      })
+    })
+
+    if (handoffProgress >= 0.9995) {
+      gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+      return
+    }
+
+    let revealTween: gsap.core.Tween | null = null
+    let startRafId: number | null = window.requestAnimationFrame(() => {
+      startRafId = null
+      const remaining = 1 - handoffProgress
+      revealTween = gsap.to(revealTargets, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: Math.max(
+          TEXT_REVEAL_HANDOFF_MIN_DURATION_S,
+          TEXT_REVEAL_DURATION_S *
+            TEXT_REVEAL_HANDOFF_DURATION_MULTIPLIER *
+            Math.max(TEXT_REVEAL_HANDOFF_MIN_REMAINING, remaining),
+        ),
+        delay: 0,
+        ease: 'power2.out',
+        stagger: 0,
+        onComplete: () => {
+          gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+        },
+      })
+    })
+
+    return () => {
+      if (startRafId !== null) {
+        window.cancelAnimationFrame(startRafId)
+      }
+      if (revealTween) {
+        revealTween.kill()
+      }
+      gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+    }
+  }, [displayLocation.key, isTransitioning])
+
   return (
     <div className={`page-transition ${isTransitioning ? 'is-transitioning' : ''}`}>
-      <div className="page-transition__current">{renderRoute(displayLocation)}</div>
+      <div ref={currentContentRef} className="page-transition__current">
+        {renderRoute(displayLocation)}
+      </div>
 
       {isTransitioning && outgoingLocation ? (
         <div className="page-transition__outgoing-layer" aria-hidden="true">
