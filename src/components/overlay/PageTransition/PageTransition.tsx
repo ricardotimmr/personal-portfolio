@@ -21,6 +21,89 @@ const OUTGOING_MIN_SCALE = 0.88
 const OUTGOING_DIM_BASE_OPACITY = 0.08
 const OUTGOING_DIM_PROGRESS_OPACITY = 0.48
 const OUTGOING_DIM_MAX_OPACITY = OUTGOING_DIM_BASE_OPACITY + OUTGOING_DIM_PROGRESS_OPACITY
+const TEXT_REVEAL_SELECTOR =
+  'h1, h2, h3, h4, h5, h6, p, li, a, button, label, dt, dd, figcaption, blockquote'
+const TEXT_REVEAL_MEDIA_SELECTOR = 'img, picture, video, canvas, svg, iframe'
+const TEXT_REVEAL_EXCLUDE_SELECTOR =
+  '[data-text-reveal-exclude], .project-edge-hint, .project-edge-hint__fill, .project-edge-line, .work-project-action, .work-project-action__text-wrap, .work-project-action__text'
+const TEXT_REVEAL_TRIGGER_PROGRESS = 0.7
+const TEXT_REVEAL_BLUR_PX = 6
+const TEXT_REVEAL_OFFSET_Y = 6
+const TEXT_REVEAL_DURATION_S = 0.86
+const TEXT_REVEAL_STAGGER_S = 0.052
+const TEXT_REVEAL_MAX_TARGETS = 32
+const TEXT_REVEAL_MAX_ANIMATED_NODES = 96
+const TEXT_REVEAL_LINE_TOP_TOLERANCE_PX = 3
+
+function splitElementIntoLineTargets(element: HTMLElement): HTMLElement[] | null {
+  if (element.childElementCount > 0) {
+    return null
+  }
+
+  const sourceText = element.textContent
+  if (!sourceText || sourceText.trim().length === 0) {
+    return null
+  }
+
+  const words = sourceText.match(/\S+/g)
+  if (!words || words.length === 0) {
+    return null
+  }
+
+  element.textContent = ''
+  const measureWordSpans: HTMLSpanElement[] = words.map((word) => {
+    const span = document.createElement('span')
+    span.className = 'page-transition__reveal-token'
+    span.textContent = word
+    element.appendChild(span)
+    return span
+  })
+
+  // Keep native spacing behavior during measurement.
+  measureWordSpans.forEach((_, index) => {
+    if (index >= measureWordSpans.length - 1) {
+      return
+    }
+    element.insertBefore(document.createTextNode(' '), measureWordSpans[index + 1])
+  })
+
+  const wordLineIndices: number[] = []
+  let currentLineTop: number | null = null
+  let currentLineIndex = -1
+  measureWordSpans.forEach((wordSpan) => {
+    const top = wordSpan.getBoundingClientRect().top
+    if (currentLineTop === null || Math.abs(top - currentLineTop) > TEXT_REVEAL_LINE_TOP_TOLERANCE_PX) {
+      currentLineIndex += 1
+      currentLineTop = top
+    }
+    wordLineIndices.push(currentLineIndex)
+  })
+
+  element.textContent = ''
+  const lineTargets: HTMLSpanElement[] = []
+  let activeLine: HTMLSpanElement | null = null
+  let activeLineWordCount = 0
+  words.forEach((word, index) => {
+    const lineIndex = wordLineIndices[index]
+    if (!activeLine || lineTargets.length - 1 !== lineIndex) {
+      activeLine = document.createElement('span')
+      activeLine.className = 'page-transition__reveal-line'
+      lineTargets.push(activeLine)
+      element.appendChild(activeLine)
+      activeLineWordCount = 0
+    }
+    if (activeLineWordCount > 0) {
+      activeLine.appendChild(document.createTextNode(' '))
+    }
+    const tokenSpan = document.createElement('span')
+    tokenSpan.className = 'page-transition__reveal-token'
+    tokenSpan.textContent = word
+    activeLine.appendChild(tokenSpan)
+    activeLineWordCount += 1
+  })
+
+  return lineTargets.length > 0 ? lineTargets : null
+}
 
 gsap.registerPlugin(CustomEase)
 CustomEase.create(
@@ -194,6 +277,7 @@ function PageTransition({
     const targetLocationKey = incomingLocation.key
     const runId = incomingTweenRunIdRef.current + 1
     incomingTweenRunIdRef.current = runId
+    let textRevealTween: gsap.core.Tween | null = null
 
     const ctx = gsap.context(() => {
       if (incomingTweenRef.current?.isActive() && activeTransitionTargetKeyRef.current === targetLocationKey) {
@@ -249,6 +333,129 @@ function PageTransition({
       let maxFrameDelta = 0
       let slowFrameCount = 0
       let outgoingTween: gsap.core.Tween | null = null
+      let hasTriggeredTextReveal = false
+      let incomingMotionComplete = false
+      let textRevealComplete = false
+      const rawTextTargets = Array.from(incomingElement.querySelectorAll<HTMLElement>(TEXT_REVEAL_SELECTOR))
+      const textTargetEntries = rawTextTargets
+        .filter((element) => {
+          if (element.getAttribute('aria-hidden') === 'true') {
+            return false
+          }
+          if (element.hasAttribute('hidden')) {
+            return false
+          }
+          if (element.matches(TEXT_REVEAL_EXCLUDE_SELECTOR) || element.closest(TEXT_REVEAL_EXCLUDE_SELECTOR)) {
+            return false
+          }
+          const computedStyle = window.getComputedStyle(element)
+          if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+            return false
+          }
+          if (element.matches(TEXT_REVEAL_MEDIA_SELECTOR)) {
+            return false
+          }
+          if (element.querySelector(TEXT_REVEAL_MEDIA_SELECTOR)) {
+            return false
+          }
+          if ((element.textContent ?? '').trim().length === 0) {
+            return false
+          }
+          const hasNestedRevealTarget = Array.from(element.children).some((child) =>
+            child.matches(TEXT_REVEAL_SELECTOR),
+          )
+          return !hasNestedRevealTarget
+        })
+        .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.width > 0 && rect.height > 0)
+        .sort((first, second) => first.rect.top - second.rect.top)
+      const textTargets = textTargetEntries.slice(0, TEXT_REVEAL_MAX_TARGETS).map(({ element }) => element)
+      const lineRevealTargets: HTMLElement[] = []
+      const fallbackTargets: HTMLElement[] = []
+      textTargets.forEach((target) => {
+        const lineTargets = splitElementIntoLineTargets(target)
+        if (!lineTargets || lineTargets.length === 0) {
+          fallbackTargets.push(target)
+          return
+        }
+        lineRevealTargets.push(...lineTargets)
+      })
+
+      const revealTargets = [...lineRevealTargets, ...fallbackTargets]
+        .map((target) => ({ target, top: target.getBoundingClientRect().top }))
+        .sort((first, second) => first.top - second.top)
+        .slice(0, TEXT_REVEAL_MAX_ANIMATED_NODES)
+        .map(({ target }) => target)
+
+      if (revealTargets.length > 0) {
+        gsap.set(revealTargets, {
+          opacity: prefersReducedMotion ? 0 : 0.16,
+          y: prefersReducedMotion ? 0 : TEXT_REVEAL_OFFSET_Y,
+          filter: prefersReducedMotion ? 'blur(0px)' : `blur(${TEXT_REVEAL_BLUR_PX}px)`,
+          willChange: 'opacity,filter,transform',
+        })
+      } else {
+        textRevealComplete = true
+      }
+
+      const completeTransition = () => {
+        if (!incomingMotionComplete || !textRevealComplete) {
+          return
+        }
+        gsap.set(incomingElement, { clearProps: 'transform,opacity,willChange' })
+        incomingElement.style.removeProperty('--incoming-content-opacity')
+        if (revealTargets.length > 0) {
+          gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+        }
+        if (outgoingElement) {
+          gsap.set(outgoingElement, { clearProps: 'transform,willChange' })
+        }
+        if (outgoingDimElement) {
+          gsap.set(outgoingDimElement, { clearProps: 'opacity,willChange' })
+        }
+        if (outgoingTween) {
+          outgoingTween.kill()
+          outgoingTween = null
+        }
+        if (textRevealTween) {
+          textRevealTween.kill()
+          textRevealTween = null
+        }
+        if (incomingTweenRef.current === tween) {
+          incomingTweenRef.current = null
+        }
+        finishTransition(targetLocationKey)
+      }
+
+      const startTextReveal = () => {
+        if (hasTriggeredTextReveal) {
+          return
+        }
+        hasTriggeredTextReveal = true
+
+        if (revealTargets.length === 0) {
+          textRevealComplete = true
+          completeTransition()
+          return
+        }
+
+        textRevealTween = gsap.to(revealTargets, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: prefersReducedMotion ? 0.2 : TEXT_REVEAL_DURATION_S,
+          ease: prefersReducedMotion ? 'power1.out' : 'power2.out',
+          stagger: prefersReducedMotion ? 0 : TEXT_REVEAL_STAGGER_S,
+          onComplete: () => {
+            if (runId !== incomingTweenRunIdRef.current) {
+              return
+            }
+            textRevealComplete = true
+            completeTransition()
+          },
+        })
+      }
+
       const setOutgoingDimOpacityValue = outgoingDimElement
         ? gsap.quickSetter(outgoingDimElement, 'opacity')
         : null
@@ -298,6 +505,9 @@ function PageTransition({
               startOutgoingDimOpacity + (OUTGOING_DIM_MAX_OPACITY - startOutgoingDimOpacity) * outgoingProgress
             setOutgoingDimOpacityValue(nextDimOpacity)
           }
+          if (progress >= TEXT_REVEAL_TRIGGER_PROGRESS) {
+            startTextReveal()
+          }
 
           if (!DEBUG_PAGE_TRANSITION) {
             return
@@ -337,23 +547,9 @@ function PageTransition({
               contentOpacity: incomingElement.style.getPropertyValue('--incoming-content-opacity'),
             })
           }
-
-          gsap.set(incomingElement, { clearProps: 'transform,opacity,willChange' })
-          incomingElement.style.removeProperty('--incoming-content-opacity')
-          if (outgoingElement) {
-            gsap.set(outgoingElement, { clearProps: 'transform,willChange' })
-          }
-          if (outgoingDimElement) {
-            gsap.set(outgoingDimElement, { clearProps: 'opacity,willChange' })
-          }
-          if (outgoingTween) {
-            outgoingTween.kill()
-            outgoingTween = null
-          }
-          if (incomingTweenRef.current === tween) {
-            incomingTweenRef.current = null
-          }
-          finishTransition(targetLocationKey)
+          incomingMotionComplete = true
+          startTextReveal()
+          completeTransition()
         },
       })
 
@@ -373,6 +569,9 @@ function PageTransition({
       }
       if (outgoingDimElement) {
         gsap.killTweensOf(outgoingDimElement)
+      }
+      if (textRevealTween) {
+        textRevealTween.kill()
       }
       ctx.revert()
     }

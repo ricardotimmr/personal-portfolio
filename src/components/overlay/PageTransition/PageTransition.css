@@ -82,3 +82,12 @@
   transition: none !important;
   backface-visibility: hidden;
 }
+
+.page-transition__reveal-line {
+  display: block;
+}
+
+.page-transition__reveal-token {
+  display: inline-block;
+  white-space: pre;
+}
