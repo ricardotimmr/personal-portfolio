@@ -25,22 +25,46 @@
 
 .page-transition__outgoing-layer {
   z-index: 55;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 .page-transition__incoming-layer {
   z-index: 60;
 }
 
+.page-transition__outgoing-motion {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.page-transition__incoming-motion {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  background: var(--color-white);
+  transform: translate3d(0, 0, 0);
+  transition: none !important;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
 .page-transition__outgoing-scroll {
   min-height: 100svh;
   will-change: transform;
+  backface-visibility: hidden;
 }
 
 .page-transition__outgoing-content {
   position: relative;
-  transform-origin: center top;
+  transform-origin: center center;
   will-change: transform, opacity;
   backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
 .page-transition__outgoing-dim {
@@ -54,7 +78,7 @@
 .page-transition__incoming-content {
   width: 100%;
   min-height: 100svh;
-  background: var(--color-white);
-  will-change: transform;
+  opacity: var(--incoming-content-opacity, 1);
+  transition: none !important;
   backface-visibility: hidden;
 }
