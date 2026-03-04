@@ -1,12 +1,20 @@
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useLocation, type Location } from 'react-router-dom'
 import './PageTransition.css'
 
 const PAGE_INCOMING_DELAY_MS = 0
-const PAGE_INCOMING_BASE_DURATION_MS = 1460
-const PAGE_INCOMING_SETTLE_EXTRA_MS = 320
+const PAGE_INCOMING_BASE_DURATION_MS = 1290
+const PAGE_INCOMING_SETTLE_EXTRA_MS = 266
 const PAGE_INCOMING_DURATION_MS = PAGE_INCOMING_BASE_DURATION_MS + PAGE_INCOMING_SETTLE_EXTRA_MS
 const REDUCED_MOTION_INCOMING_DURATION_MS = 360
 const PAGE_INCOMING_DELAY_S = PAGE_INCOMING_DELAY_MS / 1000
@@ -16,21 +24,213 @@ const REDUCED_MOTION_INCOMING_DURATION_S = REDUCED_MOTION_INCOMING_DURATION_MS /
 const DEBUG_PAGE_TRANSITION = import.meta.env.DEV
 const DEBUG_UPDATE_LOG_INTERVAL_MS = 120
 const SLOW_FRAME_THRESHOLD_MS = 22
-const PAGE_EASE_NAME = 'pageCreepWhipSettle-v6'
+const PAGE_EASE_NAME = 'pageCreepWhipSettle-v7'
 const OUTGOING_MIN_SCALE = 0.88
 const OUTGOING_DIM_BASE_OPACITY = 0.08
 const OUTGOING_DIM_PROGRESS_OPACITY = 0.48
 const OUTGOING_DIM_MAX_OPACITY = OUTGOING_DIM_BASE_OPACITY + OUTGOING_DIM_PROGRESS_OPACITY
+const TEXT_REVEAL_SELECTOR =
+  'h1, h2, h3, h4, h5, h6, p, li, a, button, label, dt, dd, figcaption, blockquote'
+const TEXT_REVEAL_MEDIA_SELECTOR = 'img, picture, video, canvas, svg, iframe'
+const TEXT_REVEAL_EXCLUDE_SELECTOR =
+  '[data-text-reveal-exclude], .project-edge-hint, .project-edge-hint__fill, .project-edge-line, .work-project-action, .work-project-action__text-wrap, .work-project-action__text'
+const TEXT_REVEAL_TRIGGER_PROGRESS = 0.7
+const TEXT_REVEAL_BLUR_PX = 6
+const TEXT_REVEAL_OFFSET_Y = 6
+const TEXT_REVEAL_DURATION_S = 1.05
+const TEXT_REVEAL_STAGGER_S = 0.052
+const TEXT_REVEAL_HANDOFF_DURATION_MULTIPLIER = 1.45
+const TEXT_REVEAL_HANDOFF_MIN_REMAINING = 0.4
+const TEXT_REVEAL_HANDOFF_MIN_DURATION_S = 0.28
+const TEXT_REVEAL_MAX_TARGETS = 32
+const TEXT_REVEAL_MAX_ANIMATED_NODES = 96
+const TEXT_REVEAL_LINE_TOP_TOLERANCE_PX = 3
+const TEXT_REVEAL_START_DELAY_S = 0.02
+
+type TextRevealSnapshot = {
+  blur: number
+  opacity: number
+  y: number
+}
+
+function splitElementIntoLineTargets(element: HTMLElement): HTMLElement[] | null {
+  if (element.childElementCount > 0) {
+    return null
+  }
+
+  const sourceText = element.textContent
+  if (!sourceText || sourceText.trim().length === 0) {
+    return null
+  }
+
+  const words = sourceText.match(/\S+/g)
+  if (!words || words.length === 0) {
+    return null
+  }
+
+  element.textContent = ''
+  const measureWordSpans: HTMLSpanElement[] = words.map((word) => {
+    const span = document.createElement('span')
+    span.className = 'page-transition__reveal-token'
+    span.textContent = word
+    element.appendChild(span)
+    return span
+  })
+
+  // Keep native spacing behavior during measurement.
+  measureWordSpans.forEach((_, index) => {
+    if (index >= measureWordSpans.length - 1) {
+      return
+    }
+    element.insertBefore(document.createTextNode(' '), measureWordSpans[index + 1])
+  })
+
+  const wordLineIndices: number[] = []
+  let currentLineTop: number | null = null
+  let currentLineIndex = -1
+  measureWordSpans.forEach((wordSpan) => {
+    const top = wordSpan.getBoundingClientRect().top
+    if (currentLineTop === null || Math.abs(top - currentLineTop) > TEXT_REVEAL_LINE_TOP_TOLERANCE_PX) {
+      currentLineIndex += 1
+      currentLineTop = top
+    }
+    wordLineIndices.push(currentLineIndex)
+  })
+
+  element.textContent = ''
+  const lineTargets: HTMLSpanElement[] = []
+  let activeLine: HTMLSpanElement | null = null
+  let activeLineWordCount = 0
+  words.forEach((word, index) => {
+    const lineIndex = wordLineIndices[index]
+    if (!activeLine || lineTargets.length - 1 !== lineIndex) {
+      activeLine = document.createElement('span')
+      activeLine.className = 'page-transition__reveal-line'
+      lineTargets.push(activeLine)
+      element.appendChild(activeLine)
+      activeLineWordCount = 0
+    }
+    if (activeLineWordCount > 0) {
+      activeLine.appendChild(document.createTextNode(' '))
+    }
+    const tokenSpan = document.createElement('span')
+    tokenSpan.className = 'page-transition__reveal-token'
+    tokenSpan.textContent = word
+    activeLine.appendChild(tokenSpan)
+    activeLineWordCount += 1
+  })
+
+  return lineTargets.length > 0 ? lineTargets : null
+}
+
+function parseBlurPx(filterValue: string): number {
+  const match = /blur\(([-\d.]+)px\)/.exec(filterValue)
+  if (!match) {
+    return 0
+  }
+  const parsed = Number.parseFloat(match[1] ?? '0')
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function remapSnapshotsByRelativeIndex(
+  snapshots: TextRevealSnapshot[],
+  targetCount: number,
+): TextRevealSnapshot[] {
+  if (targetCount <= 0 || snapshots.length === 0) {
+    return []
+  }
+  if (snapshots.length === targetCount) {
+    return snapshots
+  }
+  if (snapshots.length === 1) {
+    return Array.from({ length: targetCount }, () => snapshots[0])
+  }
+
+  const sourceLastIndex = snapshots.length - 1
+  const targetLastIndex = Math.max(1, targetCount - 1)
+
+  return Array.from({ length: targetCount }, (_, targetIndex) => {
+    const normalized = targetIndex / targetLastIndex
+    const sourcePosition = normalized * sourceLastIndex
+    const sourceLowerIndex = Math.floor(sourcePosition)
+    const sourceUpperIndex = Math.min(sourceLastIndex, sourceLowerIndex + 1)
+    const weight = sourcePosition - sourceLowerIndex
+    const lower = snapshots[sourceLowerIndex]
+    const upper = snapshots[sourceUpperIndex]
+
+    return {
+      opacity: lower.opacity + (upper.opacity - lower.opacity) * weight,
+      y: lower.y + (upper.y - lower.y) * weight,
+      blur: lower.blur + (upper.blur - lower.blur) * weight,
+    }
+  })
+}
+
+function collectRevealTargets(root: HTMLElement) {
+  const rawTextTargets = Array.from(root.querySelectorAll<HTMLElement>(TEXT_REVEAL_SELECTOR))
+  const textTargetEntries = rawTextTargets
+    .filter((element) => {
+      if (element.getAttribute('aria-hidden') === 'true') {
+        return false
+      }
+      if (element.hasAttribute('hidden')) {
+        return false
+      }
+      if (element.matches(TEXT_REVEAL_EXCLUDE_SELECTOR) || element.closest(TEXT_REVEAL_EXCLUDE_SELECTOR)) {
+        return false
+      }
+      const computedStyle = window.getComputedStyle(element)
+      if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+        return false
+      }
+      if (element.matches(TEXT_REVEAL_MEDIA_SELECTOR)) {
+        return false
+      }
+      if (element.querySelector(TEXT_REVEAL_MEDIA_SELECTOR)) {
+        return false
+      }
+      if ((element.textContent ?? '').trim().length === 0) {
+        return false
+      }
+      const hasNestedRevealTarget = Array.from(element.children).some((child) =>
+        child.matches(TEXT_REVEAL_SELECTOR),
+      )
+      return !hasNestedRevealTarget
+    })
+    .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+    .filter(({ rect }) => rect.width > 0 && rect.height > 0)
+    .sort((first, second) => first.rect.top - second.rect.top)
+  const textTargets = textTargetEntries.slice(0, TEXT_REVEAL_MAX_TARGETS).map(({ element }) => element)
+
+  const lineRevealTargets: HTMLElement[] = []
+  const fallbackTargets: HTMLElement[] = []
+  textTargets.forEach((target) => {
+    const lineTargets = splitElementIntoLineTargets(target)
+    if (!lineTargets || lineTargets.length === 0) {
+      fallbackTargets.push(target)
+      return
+    }
+    lineRevealTargets.push(...lineTargets)
+  })
+
+  const animatedTargets = [...lineRevealTargets, ...fallbackTargets]
+    .map((target) => ({ target, top: target.getBoundingClientRect().top }))
+    .sort((first, second) => first.top - second.top)
+    .slice(0, TEXT_REVEAL_MAX_ANIMATED_NODES)
+    .map(({ target }) => target)
+
+  return { animatedTargets }
+}
 
 gsap.registerPlugin(CustomEase)
 CustomEase.create(
   PAGE_EASE_NAME,
   // Travel-anchored phases:
-  // - creep reaches ~15% travel
+  // - creep reaches ~10% travel
   // - whip reaches ~80% travel
   // - then long settle that keeps decelerating toward 100%
   // S commands keep tangent continuity at phase joins for smoother speed blending.
-  'M0,0 C0.08,0.001 0.24,0.04 0.42,0.15 S0.60,0.72 0.66,0.85 C0.72,0.885 0.79,0.93 0.86,0.955 C0.93,0.978 0.97,0.992 1,1',
+  'M0,0 C0.08,0.001 0.24,0.028 0.40,0.10 S0.59,0.70 0.66,0.85 C0.72,0.885 0.79,0.93 0.86,0.955 C0.93,0.978 0.97,0.992 1,1',
 )
 
 type TransitionWindow = Window & {
@@ -41,6 +241,10 @@ type PageTransitionProps = {
   renderRoute: (location: Location) => ReactNode
   onTransitioningChange?: (isTransitioning: boolean) => void
   onDisplayedLocationKeyChange?: (key: string) => void
+}
+
+type PageTransitionOutgoingLayerStyle = CSSProperties & {
+  '--page-transition-outgoing-scroll-y': string
 }
 
 function PageTransition({
@@ -55,6 +259,7 @@ function PageTransition({
   const [outgoingScrollY, setOutgoingScrollY] = useState(0)
   const [outgoingDimOpacity, setOutgoingDimOpacity] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const currentContentRef = useRef<HTMLDivElement | null>(null)
   const incomingMotionRef = useRef<HTMLDivElement | null>(null)
   const outgoingMotionRef = useRef<HTMLDivElement | null>(null)
   const outgoingDimRef = useRef<HTMLDivElement | null>(null)
@@ -65,6 +270,8 @@ function PageTransition({
   const pendingLocationRef = useRef<Location | null>(null)
   const activeTransitionTargetKeyRef = useRef<string | null>(null)
   const incomingTweenRunIdRef = useRef(0)
+  const hasInitializedRevealRef = useRef(false)
+  const textRevealHandoffRef = useRef<{ key: string; snapshots: TextRevealSnapshot[] } | null>(null)
 
   useEffect(() => {
     incomingLocationRef.current = incomingLocation
@@ -179,7 +386,6 @@ function PageTransition({
     }
     const outgoingElement = outgoingMotionRef.current
     const outgoingDimElement = outgoingDimRef.current
-
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -194,6 +400,7 @@ function PageTransition({
     const targetLocationKey = incomingLocation.key
     const runId = incomingTweenRunIdRef.current + 1
     incomingTweenRunIdRef.current = runId
+    let textRevealTween: gsap.core.Tween | null = null
 
     const ctx = gsap.context(() => {
       if (incomingTweenRef.current?.isActive() && activeTransitionTargetKeyRef.current === targetLocationKey) {
@@ -249,6 +456,39 @@ function PageTransition({
       let maxFrameDelta = 0
       let slowFrameCount = 0
       let outgoingTween: gsap.core.Tween | null = null
+      let hasTriggeredTextReveal = false
+      const revealPlan = collectRevealTargets(incomingElement)
+      const revealTargets = revealPlan.animatedTargets
+
+      if (revealTargets.length > 0) {
+        gsap.set(revealTargets, {
+          opacity: prefersReducedMotion ? 0 : 0.16,
+          y: prefersReducedMotion ? 0 : TEXT_REVEAL_OFFSET_Y,
+          filter: prefersReducedMotion ? 'blur(0px)' : `blur(${TEXT_REVEAL_BLUR_PX}px)`,
+          willChange: 'opacity,filter,transform',
+        })
+      }
+
+      const startTextReveal = () => {
+        if (hasTriggeredTextReveal || revealTargets.length === 0) {
+          return
+        }
+        hasTriggeredTextReveal = true
+
+        textRevealTween = gsap.to(revealTargets, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: prefersReducedMotion ? 0.2 : TEXT_REVEAL_DURATION_S,
+          delay: prefersReducedMotion ? 0 : TEXT_REVEAL_START_DELAY_S,
+          ease: prefersReducedMotion ? 'power1.out' : 'power2.out',
+          stagger: prefersReducedMotion ? 0 : TEXT_REVEAL_STAGGER_S,
+          onComplete: () => {
+            gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+          },
+        })
+      }
+
       const setOutgoingDimOpacityValue = outgoingDimElement
         ? gsap.quickSetter(outgoingDimElement, 'opacity')
         : null
@@ -261,6 +501,7 @@ function PageTransition({
           ease,
           force3D: true,
         })
+
       }
 
       const tween = gsap.to(incomingElement, {
@@ -297,6 +538,9 @@ function PageTransition({
             const nextDimOpacity =
               startOutgoingDimOpacity + (OUTGOING_DIM_MAX_OPACITY - startOutgoingDimOpacity) * outgoingProgress
             setOutgoingDimOpacityValue(nextDimOpacity)
+          }
+          if (progress >= TEXT_REVEAL_TRIGGER_PROGRESS) {
+            startTextReveal()
           }
 
           if (!DEBUG_PAGE_TRANSITION) {
@@ -337,6 +581,22 @@ function PageTransition({
               contentOpacity: incomingElement.style.getPropertyValue('--incoming-content-opacity'),
             })
           }
+          startTextReveal()
+          if (hasTriggeredTextReveal && revealTargets.length > 0) {
+            const snapshots = revealTargets.map((target) => {
+              const opacityValue = Number(gsap.getProperty(target, 'opacity'))
+              const yValue = Number(gsap.getProperty(target, 'y'))
+              const filterValue = window.getComputedStyle(target).filter
+              return {
+                blur: parseBlurPx(filterValue),
+                opacity: Number.isFinite(opacityValue) ? Math.max(0, Math.min(1, opacityValue)) : 1,
+                y: Number.isFinite(yValue) ? yValue : 0,
+              }
+            })
+            textRevealHandoffRef.current = { key: targetLocationKey, snapshots }
+          } else {
+            textRevealHandoffRef.current = null
+          }
 
           gsap.set(incomingElement, { clearProps: 'transform,opacity,willChange' })
           incomingElement.style.removeProperty('--incoming-content-opacity')
@@ -349,6 +609,10 @@ function PageTransition({
           if (outgoingTween) {
             outgoingTween.kill()
             outgoingTween = null
+          }
+          if (textRevealTween) {
+            textRevealTween.kill()
+            textRevealTween = null
           }
           if (incomingTweenRef.current === tween) {
             incomingTweenRef.current = null
@@ -374,16 +638,123 @@ function PageTransition({
       if (outgoingDimElement) {
         gsap.killTweensOf(outgoingDimElement)
       }
+      if (textRevealTween) {
+        textRevealTween.kill()
+      }
       ctx.revert()
     }
   }, [finishTransition, incomingLocation, isTransitioning, outgoingDimOpacity])
 
+  useLayoutEffect(() => {
+    const currentElement = currentContentRef.current
+    if (!currentElement || isTransitioning) {
+      return
+    }
+
+    if (!hasInitializedRevealRef.current) {
+      hasInitializedRevealRef.current = true
+      return
+    }
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const revealTargets = collectRevealTargets(currentElement).animatedTargets
+
+    if (revealTargets.length === 0) {
+      textRevealHandoffRef.current = null
+      return
+    }
+
+    const handoff = textRevealHandoffRef.current
+    const handoffSnapshots = handoff && handoff.key === displayLocation.key ? handoff.snapshots : null
+    textRevealHandoffRef.current = null
+
+    if (prefersReducedMotion || !handoffSnapshots || handoffSnapshots.length === 0) {
+      gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+      return
+    }
+
+    const remappedSnapshots = remapSnapshotsByRelativeIndex(handoffSnapshots, revealTargets.length)
+    const baseOpacity = prefersReducedMotion ? 0 : 0.16
+    const handoffProgress = Math.max(
+      0,
+      Math.min(
+        1,
+        remappedSnapshots.reduce((sum, snapshot) => {
+          const normalized = (snapshot.opacity - baseOpacity) / Math.max(0.0001, 1 - baseOpacity)
+          return sum + Math.max(0, Math.min(1, normalized))
+        }, 0) / remappedSnapshots.length,
+      ),
+    )
+
+    revealTargets.forEach((target, index) => {
+      const snapshot = remappedSnapshots[index]
+      gsap.set(target, {
+        opacity: snapshot.opacity,
+        y: snapshot.y,
+        filter: `blur(${Math.max(0, snapshot.blur)}px)`,
+        willChange: 'opacity,filter,transform',
+      })
+    })
+
+    if (handoffProgress >= 0.9995) {
+      gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+      return
+    }
+
+    let revealTween: gsap.core.Tween | null = null
+    let startRafId: number | null = window.requestAnimationFrame(() => {
+      startRafId = null
+      const remaining = 1 - handoffProgress
+      revealTween = gsap.to(revealTargets, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: Math.max(
+          TEXT_REVEAL_HANDOFF_MIN_DURATION_S,
+          TEXT_REVEAL_DURATION_S *
+            TEXT_REVEAL_HANDOFF_DURATION_MULTIPLIER *
+            Math.max(TEXT_REVEAL_HANDOFF_MIN_REMAINING, remaining),
+        ),
+        delay: 0,
+        ease: 'power2.out',
+        stagger: 0,
+        onComplete: () => {
+          gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+        },
+      })
+    })
+
+    return () => {
+      if (startRafId !== null) {
+        window.cancelAnimationFrame(startRafId)
+      }
+      if (revealTween) {
+        revealTween.kill()
+      }
+      gsap.set(revealTargets, { clearProps: 'opacity,filter,transform,willChange' })
+    }
+  }, [displayLocation.key, isTransitioning])
+
   return (
     <div className={`page-transition ${isTransitioning ? 'is-transitioning' : ''}`}>
-      <div className="page-transition__current">{renderRoute(displayLocation)}</div>
+      <div ref={currentContentRef} className="page-transition__current">
+        {renderRoute(displayLocation)}
+      </div>
 
       {isTransitioning && outgoingLocation ? (
-        <div className="page-transition__outgoing-layer" aria-hidden="true">
+        <div
+          className="page-transition__outgoing-layer"
+          style={
+            {
+              '--page-transition-outgoing-scroll-y': `${outgoingScrollY}px`,
+            } as PageTransitionOutgoingLayerStyle
+          }
+          aria-hidden="true"
+        >
           <div ref={outgoingMotionRef} className="page-transition__outgoing-motion">
             <div
               className="page-transition__outgoing-scroll"

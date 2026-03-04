@@ -31,9 +31,22 @@
   position: fixed;
   top: 120px;
   right: clamp(18px, 6.25vw, 90px);
-  transform: none;
+  transform: translate3d(0, 0, 0);
   z-index: 24;
   pointer-events: none;
+  opacity: 0;
+  filter: blur(10px);
+  will-change: opacity, transform, filter;
+  transition:
+    opacity 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 680ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.project-scroll-minimap.is-ready {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+  transition-delay: 40ms;
 }
 
 .project-scroll-minimap__frame {
@@ -43,9 +56,6 @@
   overflow: hidden;
   border: 0;
   background: transparent;
-  opacity: 0;
-  transform: translate3d(0, 8px, 0);
-  animation: project-minimap-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards;
 }
 
 .project-scroll-minimap__host {
@@ -78,17 +88,6 @@
   background: transparent;
   box-shadow: none;
   transform: translate3d(0, 0, 0);
-}
-
-@keyframes project-minimap-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
 }
 
 .project-detail-section {

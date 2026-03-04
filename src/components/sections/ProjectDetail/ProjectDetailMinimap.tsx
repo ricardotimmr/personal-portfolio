@@ -5,6 +5,7 @@ type ProjectDetailMinimapProps = {
   minimapFrameRef: RefObject<HTMLDivElement | null>
   minimapHostRef: RefObject<HTMLDivElement | null>
   minimapViewportRef: RefObject<HTMLSpanElement | null>
+  isReady?: boolean
 }
 
 function ProjectDetailMinimap({
@@ -12,9 +13,10 @@ function ProjectDetailMinimap({
   minimapFrameRef,
   minimapHostRef,
   minimapViewportRef,
+  isReady = false,
 }: ProjectDetailMinimapProps) {
   return (
-    <aside className="project-scroll-minimap" aria-hidden="true" ref={minimapRef}>
+    <aside className={`project-scroll-minimap${isReady ? ' is-ready' : ''}`} aria-hidden="true" ref={minimapRef}>
       <div className="project-scroll-minimap__frame" ref={minimapFrameRef}>
         <div className="project-scroll-minimap__host" ref={minimapHostRef} />
         <span className="project-scroll-minimap__viewport" ref={minimapViewportRef} />

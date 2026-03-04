@@ -28,7 +28,7 @@ function AppRoutes({ routeLocation, isPageTransitioning }: AppRoutesProps) {
   return (
     <Routes location={routeLocation}>
       <Route path="/" element={<IndexPage />} />
-      <Route path="/work" element={<WorkPage />} />
+      <Route path="/work" element={<WorkPage isPageTransitioning={isPageTransitioning} />} />
       <Route path="/work/:projectSlug" element={<ProjectDetailPage isPageTransitioning={isPageTransitioning} />} />
       <Route path="/freetime" element={<FreetimePage />} />
       <Route path="/info" element={<InfoPage />} />

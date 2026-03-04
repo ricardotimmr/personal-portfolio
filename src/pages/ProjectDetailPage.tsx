@@ -35,6 +35,7 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
   const [edgeDirection, setEdgeDirection] = useState<BoundaryDirection | null>(null)
   const [edgeProgress, setEdgeProgress] = useState(0)
   const [dimDirection, setDimDirection] = useState<BoundaryDirection>('next')
+  const [isMinimapReady, setIsMinimapReady] = useState(false)
   const edgeDirectionRef = useRef<BoundaryDirection | null>(null)
   const edgeProgressRef = useRef(0)
   const edgeAccumulatedRef = useRef(0)
@@ -60,7 +61,34 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
     minimapHostRef,
     minimapViewportRef,
     heroRef,
-  } = useProjectDetailMinimap(project?.slug)
+  } = useProjectDetailMinimap(project?.slug, isPageTransitioning)
+
+  useEffect(() => {
+    if (isPageTransitioning) {
+      setIsMinimapReady(false)
+      return
+    }
+
+    let rafA: number | null = null
+    let rafB: number | null = null
+
+    rafA = window.requestAnimationFrame(() => {
+      rafA = null
+      rafB = window.requestAnimationFrame(() => {
+        rafB = null
+        setIsMinimapReady(true)
+      })
+    })
+
+    return () => {
+      if (rafA !== null) {
+        window.cancelAnimationFrame(rafA)
+      }
+      if (rafB !== null) {
+        window.cancelAnimationFrame(rafB)
+      }
+    }
+  }, [isPageTransitioning, projectSlug])
 
   useEffect(() => {
     edgeDirectionRef.current = edgeDirection
@@ -233,6 +261,7 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
         minimapFrameRef={minimapFrameRef}
         minimapHostRef={minimapHostRef}
         minimapViewportRef={minimapViewportRef}
+        isReady={isMinimapReady}
       />
 
       <div className="project-detail-content" ref={mainContentRef}>

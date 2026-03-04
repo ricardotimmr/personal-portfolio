@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-export function useProjectDetailMinimap(projectKey: string | undefined) {
+export function useProjectDetailMinimap(projectKey: string | undefined, isFrozen = false) {
   const mainContentRef = useRef<HTMLDivElement | null>(null)
   const minimapRef = useRef<HTMLElement | null>(null)
   const minimapFrameRef = useRef<HTMLDivElement | null>(null)
@@ -24,11 +24,31 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
       return
     }
 
+    // During page transitions we keep the existing minimap snapshot static.
+    // This prevents outgoing-layer minimap jitter when users continue to scroll.
+    if (isFrozen) {
+      return
+    }
+
     let rafId: number | null = null
 
     const clone = source.cloneNode(true) as HTMLElement
     clone.classList.add('project-scroll-minimap__clone')
     clone.setAttribute('aria-hidden', 'true')
+
+    // The page-transition text reveal uses transient inline opacity/blur/transform styles.
+    // If we snapshot those into the minimap clone, text can appear artificially lighter
+    // until the next clone refresh. Strip only those transient properties.
+    clone.querySelectorAll<HTMLElement>('[style]').forEach((element) => {
+      element.style.removeProperty('opacity')
+      element.style.removeProperty('filter')
+      element.style.removeProperty('transform')
+      element.style.removeProperty('will-change')
+      if ((element.getAttribute('style') ?? '').trim().length === 0) {
+        element.removeAttribute('style')
+      }
+    })
+
     minimapHost.innerHTML = ''
     minimapHost.append(clone)
 
@@ -64,7 +84,8 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
 
     const updateMinimapPosition = () => {
       const heroTopDoc = hero.getBoundingClientRect().top + window.scrollY
-      const baseTop = Math.max(12, heroTopDoc)
+      const minTop = 12
+      const baseTop = Math.max(minTop, heroTopDoc)
       const minimapHeight = minimapFrame.clientHeight
       const lastVisual = source.querySelector(
         '.project-detail-visual-stack:last-of-type .project-detail-visual:last-child',
@@ -76,7 +97,8 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
       }
 
       const lastVisualBottomDoc = lastVisual.getBoundingClientRect().bottom + window.scrollY
-      const clampedTop = Math.min(baseTop, lastVisualBottomDoc - window.scrollY - minimapHeight)
+      const maxTop = lastVisualBottomDoc - window.scrollY - minimapHeight
+      const clampedTop = Math.max(minTop, Math.min(baseTop, maxTop))
       minimap.style.top = `${clampedTop.toFixed(3)}px`
     }
 
@@ -110,7 +132,7 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
         window.cancelAnimationFrame(rafId)
       }
     }
-  }, [projectKey])
+  }, [isFrozen, projectKey])
 
   return {
     mainContentRef,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
 import WorkProjectCard from '../components/sections/WorkGallery/WorkProjectCard'
 import WorkProjectPanelContent from '../components/sections/WorkGallery/WorkProjectPanelContent'
@@ -14,25 +14,34 @@ const workCardScrollAnimationMinDurationMs = 360
 const workCardScrollAnimationMaxDurationMs = 760
 const workCardScrollAnimationDistanceForMaxDurationPx = 520
 
-function WorkPage() {
+type WorkPageProps = {
+  isPageTransitioning?: boolean
+}
+
+function WorkPage({ isPageTransitioning = false }: WorkPageProps) {
   const projects = useMemo(() => PROJECTS, [])
   const sectionRef = useRef<HTMLElement | null>(null)
+  const [navigationLockedProjectIndex, setNavigationLockedProjectIndex] = useState<number | null>(null)
+  const shouldFreezePanelState = isPageTransitioning || navigationLockedProjectIndex !== null
   const { activeProjectIndex, isPanelFadedOut, panelTransition, updateScrollLinkedState } =
-    useWorkProjectPanelState(sectionRef, projects.length)
+    useWorkProjectPanelState(sectionRef, projects.length, shouldFreezePanelState)
   const cardFocusScrollRafRef = useRef<number | null>(null)
 
-  const activeProject = projects[activeProjectIndex] ?? null
-  const outgoingProject = panelTransition ? projects[panelTransition.fromIndex] ?? null : null
-  const incomingProject = panelTransition ? projects[panelTransition.toIndex] ?? null : null
-  const outgoingTranslatePercent = panelTransition
-    ? panelTransition.direction === 1
-      ? -panelTransition.progress * 100
-      : panelTransition.progress * 100
+  const resolvedActiveProjectIndex = navigationLockedProjectIndex ?? activeProjectIndex
+  const activeProject = projects[resolvedActiveProjectIndex] ?? null
+  const activePanelTransition = shouldFreezePanelState ? null : panelTransition
+  const panelIsFadedOut = shouldFreezePanelState ? false : isPanelFadedOut
+  const outgoingProject = activePanelTransition ? projects[activePanelTransition.fromIndex] ?? null : null
+  const incomingProject = activePanelTransition ? projects[activePanelTransition.toIndex] ?? null : null
+  const outgoingTranslatePercent = activePanelTransition
+    ? activePanelTransition.direction === 1
+      ? -activePanelTransition.progress * 100
+      : activePanelTransition.progress * 100
     : 0
-  const incomingTranslatePercent = panelTransition
-    ? panelTransition.direction === 1
-      ? (1 - panelTransition.progress) * 100
-      : -(1 - panelTransition.progress) * 100
+  const incomingTranslatePercent = activePanelTransition
+    ? activePanelTransition.direction === 1
+      ? (1 - activePanelTransition.progress) * 100
+      : -(1 - activePanelTransition.progress) * 100
     : 0
 
   const focusProjectCardIntoViewportAlignment = useCallback((cardElement: HTMLElement) => {
@@ -101,7 +110,7 @@ function WorkPage() {
   }, [])
 
   const handleProjectCardClick = useCallback(
-    (event: MouseEvent<HTMLAnchorElement>) => {
+    (event: MouseEvent<HTMLAnchorElement>, projectIndex: number) => {
       if (event.defaultPrevented) {
         return
       }
@@ -112,11 +121,13 @@ function WorkPage() {
 
       // Keep keyboard-triggered link activation immediate.
       if (event.detail === 0) {
+        setNavigationLockedProjectIndex(projectIndex)
         return
       }
 
       const clickedCard = event.currentTarget
       if (isProjectCardAlignedForNavigation(clickedCard)) {
+        setNavigationLockedProjectIndex(projectIndex)
         return
       }
 
@@ -140,12 +151,12 @@ function WorkPage() {
       <section ref={sectionRef} className="work-section work-section--gallery">
         <div className="work-gallery-layout">
           <div className="work-gallery">
-            {projects.map((project) => (
+            {projects.map((project, index) => (
               <WorkProjectCard
                 key={project.id}
                 project={project}
                 onImageLoad={() => updateScrollLinkedState(true)}
-                onProjectClick={handleProjectCardClick}
+                onProjectClick={(event) => handleProjectCardClick(event, index)}
               />
             ))}
           </div>
@@ -154,7 +165,7 @@ function WorkPage() {
 
         {activeProject ? (
           <aside
-            className={`work-project-panel-fixed ${isPanelFadedOut ? 'is-faded-out' : ''}`}
+            className={`work-project-panel-fixed ${panelIsFadedOut ? 'is-faded-out' : ''}`}
             aria-live="polite"
           >
             <div className="work-project-panel-fixed__viewport">
@@ -162,7 +173,7 @@ function WorkPage() {
                 <WorkProjectPanelContent project={activeProject} />
               </div>
 
-              {panelTransition && outgoingProject && incomingProject ? (
+              {activePanelTransition && outgoingProject && incomingProject ? (
                 <>
                   <div
                     className="work-project-panel-fixed__layer"
