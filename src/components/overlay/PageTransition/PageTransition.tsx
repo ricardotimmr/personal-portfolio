@@ -1,12 +1,20 @@
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useLocation, type Location } from 'react-router-dom'
 import './PageTransition.css'
 
 const PAGE_INCOMING_DELAY_MS = 0
-const PAGE_INCOMING_BASE_DURATION_MS = 1460
-const PAGE_INCOMING_SETTLE_EXTRA_MS = 320
+const PAGE_INCOMING_BASE_DURATION_MS = 1290
+const PAGE_INCOMING_SETTLE_EXTRA_MS = 266
 const PAGE_INCOMING_DURATION_MS = PAGE_INCOMING_BASE_DURATION_MS + PAGE_INCOMING_SETTLE_EXTRA_MS
 const REDUCED_MOTION_INCOMING_DURATION_MS = 360
 const PAGE_INCOMING_DELAY_S = PAGE_INCOMING_DELAY_MS / 1000
@@ -16,7 +24,7 @@ const REDUCED_MOTION_INCOMING_DURATION_S = REDUCED_MOTION_INCOMING_DURATION_MS /
 const DEBUG_PAGE_TRANSITION = import.meta.env.DEV
 const DEBUG_UPDATE_LOG_INTERVAL_MS = 120
 const SLOW_FRAME_THRESHOLD_MS = 22
-const PAGE_EASE_NAME = 'pageCreepWhipSettle-v6'
+const PAGE_EASE_NAME = 'pageCreepWhipSettle-v7'
 const OUTGOING_MIN_SCALE = 0.88
 const OUTGOING_DIM_BASE_OPACITY = 0.08
 const OUTGOING_DIM_PROGRESS_OPACITY = 0.48
@@ -218,11 +226,11 @@ gsap.registerPlugin(CustomEase)
 CustomEase.create(
   PAGE_EASE_NAME,
   // Travel-anchored phases:
-  // - creep reaches ~15% travel
+  // - creep reaches ~10% travel
   // - whip reaches ~80% travel
   // - then long settle that keeps decelerating toward 100%
   // S commands keep tangent continuity at phase joins for smoother speed blending.
-  'M0,0 C0.08,0.001 0.24,0.04 0.42,0.15 S0.60,0.72 0.66,0.85 C0.72,0.885 0.79,0.93 0.86,0.955 C0.93,0.978 0.97,0.992 1,1',
+  'M0,0 C0.08,0.001 0.24,0.028 0.40,0.10 S0.59,0.70 0.66,0.85 C0.72,0.885 0.79,0.93 0.86,0.955 C0.93,0.978 0.97,0.992 1,1',
 )
 
 type TransitionWindow = Window & {
@@ -233,6 +241,10 @@ type PageTransitionProps = {
   renderRoute: (location: Location) => ReactNode
   onTransitioningChange?: (isTransitioning: boolean) => void
   onDisplayedLocationKeyChange?: (key: string) => void
+}
+
+type PageTransitionOutgoingLayerStyle = CSSProperties & {
+  '--page-transition-outgoing-scroll-y': string
 }
 
 function PageTransition({
@@ -374,7 +386,6 @@ function PageTransition({
     }
     const outgoingElement = outgoingMotionRef.current
     const outgoingDimElement = outgoingDimRef.current
-
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -490,6 +501,7 @@ function PageTransition({
           ease,
           force3D: true,
         })
+
       }
 
       const tween = gsap.to(incomingElement, {
@@ -585,6 +597,7 @@ function PageTransition({
           } else {
             textRevealHandoffRef.current = null
           }
+
           gsap.set(incomingElement, { clearProps: 'transform,opacity,willChange' })
           incomingElement.style.removeProperty('--incoming-content-opacity')
           if (outgoingElement) {
@@ -733,7 +746,15 @@ function PageTransition({
       </div>
 
       {isTransitioning && outgoingLocation ? (
-        <div className="page-transition__outgoing-layer" aria-hidden="true">
+        <div
+          className="page-transition__outgoing-layer"
+          style={
+            {
+              '--page-transition-outgoing-scroll-y': `${outgoingScrollY}px`,
+            } as PageTransitionOutgoingLayerStyle
+          }
+          aria-hidden="true"
+        >
           <div ref={outgoingMotionRef} className="page-transition__outgoing-motion">
             <div
               className="page-transition__outgoing-scroll"

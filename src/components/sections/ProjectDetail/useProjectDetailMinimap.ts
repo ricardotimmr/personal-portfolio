@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-export function useProjectDetailMinimap(projectKey: string | undefined) {
+export function useProjectDetailMinimap(projectKey: string | undefined, isFrozen = false) {
   const mainContentRef = useRef<HTMLDivElement | null>(null)
   const minimapRef = useRef<HTMLElement | null>(null)
   const minimapFrameRef = useRef<HTMLDivElement | null>(null)
@@ -21,6 +21,12 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
     const hero = heroRef.current
 
     if (!source || !minimap || !minimapFrame || !minimapHost || !viewportMarker || !hero) {
+      return
+    }
+
+    // During page transitions we keep the existing minimap snapshot static.
+    // This prevents outgoing-layer minimap jitter when users continue to scroll.
+    if (isFrozen) {
       return
     }
 
@@ -78,7 +84,8 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
 
     const updateMinimapPosition = () => {
       const heroTopDoc = hero.getBoundingClientRect().top + window.scrollY
-      const baseTop = Math.max(12, heroTopDoc)
+      const minTop = 12
+      const baseTop = Math.max(minTop, heroTopDoc)
       const minimapHeight = minimapFrame.clientHeight
       const lastVisual = source.querySelector(
         '.project-detail-visual-stack:last-of-type .project-detail-visual:last-child',
@@ -90,7 +97,8 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
       }
 
       const lastVisualBottomDoc = lastVisual.getBoundingClientRect().bottom + window.scrollY
-      const clampedTop = Math.min(baseTop, lastVisualBottomDoc - window.scrollY - minimapHeight)
+      const maxTop = lastVisualBottomDoc - window.scrollY - minimapHeight
+      const clampedTop = Math.max(minTop, Math.min(baseTop, maxTop))
       minimap.style.top = `${clampedTop.toFixed(3)}px`
     }
 
@@ -124,7 +132,7 @@ export function useProjectDetailMinimap(projectKey: string | undefined) {
         window.cancelAnimationFrame(rafId)
       }
     }
-  }, [projectKey])
+  }, [isFrozen, projectKey])
 
   return {
     mainContentRef,

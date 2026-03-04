@@ -96,10 +96,15 @@
   transform: translate3d(0, 0, 0) !important;
 }
 
-.page-transition__incoming-layer .project-scroll-minimap {
-  opacity: 0 !important;
-  transform: translate3d(0, 8px, 0) !important;
-  filter: blur(6px) !important;
+/* Keep Work page fixed panel pinned during outgoing scroll emulation.
+   Outgoing wrapper uses translateY(-scrollY); fixed descendants need a counter offset. */
+.page-transition__outgoing-layer .work-project-panel-fixed {
+  transform: translate3d(
+      0,
+      calc(-50% + var(--page-transition-outgoing-scroll-y, 0px)),
+      0
+    )
+    !important;
   transition: none !important;
 }
 

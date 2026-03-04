@@ -12,6 +12,7 @@ const PANEL_TRANSITION_BAND_PX = 120
 export function useWorkProjectPanelState(
   sectionRef: RefObject<HTMLElement | null>,
   projectsLength: number,
+  isFrozen = false,
 ) {
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [isPanelFadedOut, setIsPanelFadedOut] = useState(false)
@@ -21,6 +22,10 @@ export function useWorkProjectPanelState(
   const scrollDirectionRef = useRef<1 | -1>(1)
 
   const updateScrollLinkedState = useCallback((force = false) => {
+    if (isFrozen) {
+      return
+    }
+
     const nextSnapshot = { y: window.scrollY, h: window.innerHeight }
     const previousSnapshot = previousScrollSnapshotRef.current
     if (!force && previousSnapshot.y === nextSnapshot.y && previousSnapshot.h === nextSnapshot.h) {
@@ -137,9 +142,13 @@ export function useWorkProjectPanelState(
     })
 
     setActiveProjectIndex((previousIndex) => (previousIndex === nextIndex ? previousIndex : nextIndex))
-  }, [projectsLength, sectionRef])
+  }, [isFrozen, projectsLength, sectionRef])
 
   useEffect(() => {
+    if (isFrozen) {
+      return
+    }
+
     let rafId = 0
     let isFirstFrame = true
 
@@ -158,7 +167,7 @@ export function useWorkProjectPanelState(
       window.removeEventListener('resize', onResize)
       window.cancelAnimationFrame(rafId)
     }
-  }, [updateScrollLinkedState])
+  }, [isFrozen, updateScrollLinkedState])
 
   return {
     activeProjectIndex,

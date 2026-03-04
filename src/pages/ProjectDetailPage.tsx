@@ -61,11 +61,7 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
     minimapHostRef,
     minimapViewportRef,
     heroRef,
-  } = useProjectDetailMinimap(project?.slug)
-
-  useEffect(() => {
-    setIsMinimapReady(false)
-  }, [projectSlug])
+  } = useProjectDetailMinimap(project?.slug, isPageTransitioning)
 
   useEffect(() => {
     if (isPageTransitioning) {
