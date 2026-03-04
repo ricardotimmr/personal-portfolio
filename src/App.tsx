@@ -18,6 +18,31 @@ import WorkPage from './pages/WorkPage'
 import './App.css'
 
 const SHOW_WIP_BANNER = true
+const INTRO_SESSION_STORAGE_KEY = 'portfolio:intro-played'
+
+function hasIntroPlayedThisSession() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  try {
+    return window.sessionStorage.getItem(INTRO_SESSION_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markIntroPlayedThisSession() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    window.sessionStorage.setItem(INTRO_SESSION_STORAGE_KEY, '1')
+  } catch {
+    // Ignore storage write failures (private mode / restricted environments).
+  }
+}
 
 type AppRoutesProps = {
   routeLocation: Location
@@ -41,13 +66,20 @@ function AppRoutes({ routeLocation, isPageTransitioning }: AppRoutesProps) {
 
 function App() {
   const location = useLocation()
+  const [introPlayedInSession] = useState(() => hasIntroPlayedThisSession())
   const [displayedLocationKey, setDisplayedLocationKey] = useState(location.key)
   const [isPageTransitioning, setIsPageTransitioning] = useState(false)
-  const [isRevealed, setIsRevealed] = useState(false)
-  const [isLoaderDone, setIsLoaderDone] = useState(false)
+  const [isRevealed, setIsRevealed] = useState(() => introPlayedInSession)
+  const [isLoaderDone, setIsLoaderDone] = useState(() => introPlayedInSession)
   const { theme, toggleTheme } = useTheme()
   const handleReveal = useCallback(() => setIsRevealed(true), [])
   const handleLoaderComplete = useCallback(() => setIsLoaderDone(true), [])
+
+  useEffect(() => {
+    if (!introPlayedInSession) {
+      markIntroPlayedThisSession()
+    }
+  }, [introPlayedInSession])
 
   useEffect(() => {
     const image = new Image()

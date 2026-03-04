@@ -1,5 +1,7 @@
+import gsap from 'gsap'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import loadingBikeGif from '../../../assets/videos/loading-screen-bike.gif'
+import { ensurePageMotionEase, PAGE_MOTION_EASE_NAME } from '../shared/pageMotionEase'
 import './InitialLoader.css'
 
 type LoaderPhase = 'loading' | 'bike-exit' | 'split-open'
@@ -19,8 +21,11 @@ const BIKE_EXIT_DURATION_MS = 760
 const SPLIT_OPEN_DELAY_MS = 220
 const SPLIT_OPEN_DURATION_MS = 1240
 const SPLIT_OPEN_SETTLE_MS = 180
+const REDUCED_MOTION_SPLIT_OPEN_DURATION_MS = 380
 const TOTAL_LOADING_TIMELINE_MS =
   LOADING_BASE_DURATION_MS + LOADING_STUTTER_ONE_MS + LOADING_STUTTER_TWO_MS
+
+ensurePageMotionEase()
 
 function getLoadingLinearProgress(elapsedMs: number): number {
   const cappedElapsed = Math.min(TOTAL_LOADING_TIMELINE_MS, elapsedMs)
@@ -46,6 +51,9 @@ function InitialLoader({ onReveal, onComplete }: InitialLoaderProps) {
   const [typedCount, setTypedCount] = useState(0)
   const revealTimeoutRef = useRef<number | null>(null)
   const completeTimeoutRef = useRef<number | null>(null)
+  const leftDoorRef = useRef<HTMLSpanElement | null>(null)
+  const rightDoorRef = useRef<HTMLSpanElement | null>(null)
+  const splitOpenTweenRef = useRef<gsap.core.Tween | null>(null)
 
   useEffect(() => {
     document.body.dataset.loading = 'true'
@@ -96,8 +104,61 @@ function InitialLoader({ onReveal, onComplete }: InitialLoaderProps) {
       if (completeTimeoutRef.current !== null) {
         window.clearTimeout(completeTimeoutRef.current)
       }
+
+      if (splitOpenTweenRef.current) {
+        splitOpenTweenRef.current.kill()
+        splitOpenTweenRef.current = null
+      }
     }
   }, [onComplete, onReveal])
+
+  useEffect(() => {
+    if (phase !== 'split-open') {
+      return
+    }
+
+    const leftDoor = leftDoorRef.current
+    const rightDoor = rightDoorRef.current
+    if (!leftDoor || !rightDoor) {
+      return
+    }
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const durationS = (prefersReducedMotion ? REDUCED_MOTION_SPLIT_OPEN_DURATION_MS : SPLIT_OPEN_DURATION_MS) / 1000
+    const ease = prefersReducedMotion ? 'power1.out' : PAGE_MOTION_EASE_NAME
+
+    splitOpenTweenRef.current?.kill()
+    gsap.killTweensOf([leftDoor, rightDoor])
+    gsap.set([leftDoor, rightDoor], { clearProps: 'transform' })
+    gsap.set([leftDoor, rightDoor], {
+      xPercent: 0,
+      force3D: true,
+      willChange: 'transform',
+    })
+
+    splitOpenTweenRef.current = gsap.to([leftDoor, rightDoor], {
+      xPercent: (index: number) => (index === 0 ? -104 : 104),
+      duration: durationS,
+      ease,
+      force3D: true,
+      overwrite: 'auto',
+      onComplete: () => {
+        gsap.set([leftDoor, rightDoor], { clearProps: 'willChange' })
+        splitOpenTweenRef.current = null
+      },
+    })
+
+    return () => {
+      if (splitOpenTweenRef.current) {
+        splitOpenTweenRef.current.kill()
+        splitOpenTweenRef.current = null
+      }
+      gsap.set([leftDoor, rightDoor], { clearProps: 'willChange' })
+    }
+  }, [phase])
 
   const bikeStyle = useMemo(
     () => ({ '--loader-progress': `${progress}%` }) as CSSProperties,
@@ -109,8 +170,8 @@ function InitialLoader({ onReveal, onComplete }: InitialLoaderProps) {
   return (
     <div className={`initial-loader initial-loader--${phase}`} role="status" aria-live="polite">
       <div className="initial-loader__doors" aria-hidden="true">
-        <span className="initial-loader__door initial-loader__door--left" />
-        <span className="initial-loader__door initial-loader__door--right" />
+        <span ref={leftDoorRef} className="initial-loader__door initial-loader__door--left" />
+        <span ref={rightDoorRef} className="initial-loader__door initial-loader__door--right" />
       </div>
 
       <div className="initial-loader__content">
