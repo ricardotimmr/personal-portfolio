@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import './LegalPages.css'
 
 type PrivacyLocale = 'de' | 'en'
@@ -331,6 +332,17 @@ function PrivacyPolicyPage() {
                 </section>
               </>
             )}
+
+            <section className="legal-page__cross-reference" aria-label={isGerman ? 'Weiterführende Rechtsseite' : 'Related legal page'}>
+              <p className="legal-page__text legal-page__cross-reference-row">
+                <span className="legal-page__cross-reference-label">
+                  {isGerman ? 'Weiterführende Rechtsseite:' : 'Related legal page:'}
+                </span>
+                <Link className="legal-page__link legal-page__cross-reference-link" to="/legal-notice">
+                  {isGerman ? 'Impressum' : 'Legal Notice'}
+                </Link>
+              </p>
+            </section>
           </motion.div>
         </AnimatePresence>
       </div>

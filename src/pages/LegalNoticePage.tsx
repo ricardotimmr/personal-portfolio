@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import './LegalPages.css'
 
 type LegalNoticeLocale = 'en' | 'de'
 
 function LegalNoticePage() {
-  const [locale, setLocale] = useState<LegalNoticeLocale>('en')
+  const [locale, setLocale] = useState<LegalNoticeLocale>('de')
   const isEnglish = locale === 'en'
 
   return (
@@ -14,19 +15,19 @@ function LegalNoticePage() {
         <div className="legal-page__lang-toggle" role="group" aria-label="Language selection">
           <button
             type="button"
-            className={`legal-page__lang-button ${isEnglish ? 'is-active' : ''}`}
-            onClick={() => setLocale('en')}
-            aria-pressed={isEnglish}
-          >
-            EN
-          </button>
-          <button
-            type="button"
             className={`legal-page__lang-button ${!isEnglish ? 'is-active' : ''}`}
             onClick={() => setLocale('de')}
             aria-pressed={!isEnglish}
           >
             DE
+          </button>
+          <button
+            type="button"
+            className={`legal-page__lang-button ${isEnglish ? 'is-active' : ''}`}
+            onClick={() => setLocale('en')}
+            aria-pressed={isEnglish}
+          >
+            EN
           </button>
         </div>
 
@@ -172,6 +173,17 @@ function LegalNoticePage() {
                 </section>
               </>
             )}
+
+            <section className="legal-page__cross-reference" aria-label={isEnglish ? 'Related legal page' : 'Weiterführende Rechtsseite'}>
+              <p className="legal-page__text legal-page__cross-reference-row">
+                <span className="legal-page__cross-reference-label">
+                  {isEnglish ? 'Related legal page:' : 'Weiterführende Rechtsseite:'}
+                </span>
+                <Link className="legal-page__link legal-page__cross-reference-link" to="/privacy-policy">
+                  {isEnglish ? 'Privacy Policy' : 'Datenschutzerklärung'}
+                </Link>
+              </p>
+            </section>
           </motion.div>
         </AnimatePresence>
       </div>

@@ -121,6 +121,36 @@
   text-decoration: underline;
 }
 
+.legal-page__cross-reference {
+  margin-top: clamp(28px, 3.056vw, 44px);
+  padding-top: clamp(12px, 1.25vw, 18px);
+  border-top: 1px solid color-mix(in srgb, var(--color-black) 14%, transparent);
+}
+
+.legal-page__cross-reference-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  flex-wrap: nowrap;
+}
+
+.legal-page__cross-reference-label,
+.legal-page__cross-reference-link {
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .legal-page__cross-reference-row {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .legal-page__cross-reference-label,
+  .legal-page__cross-reference-link {
+    white-space: normal;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .legal-page__locale-content {
     transition: none;
