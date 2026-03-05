@@ -246,9 +246,10 @@ function PageTransition({
   const location = useLocation()
   const [displayLocation, setDisplayLocation] = useState(location)
   const [incomingLocation, setIncomingLocation] = useState<Location | null>(null)
-  const [outgoingLocation, setOutgoingLocation] = useState<Location | null>(null)
+  const [outgoingSnapshotMarkup, setOutgoingSnapshotMarkup] = useState<string | null>(null)
   const [outgoingScrollY, setOutgoingScrollY] = useState(0)
   const [outgoingDimOpacity, setOutgoingDimOpacity] = useState(0)
+  const [useSnapshotDimOnly, setUseSnapshotDimOnly] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const currentContentRef = useRef<HTMLDivElement | null>(null)
   const incomingMotionRef = useRef<HTMLDivElement | null>(null)
@@ -307,15 +308,24 @@ function PageTransition({
       const pendingDimOpacity = transitionWindow.__projectOutgoingDimOpacity
       if (typeof pendingDimOpacity === 'number' && Number.isFinite(pendingDimOpacity)) {
         setOutgoingDimOpacity(Math.max(0, Math.min(1, pendingDimOpacity)))
+        setUseSnapshotDimOnly(true)
       } else {
         setOutgoingDimOpacity(0)
+        setUseSnapshotDimOnly(false)
       }
       delete transitionWindow.__projectOutgoingDimOpacity
+      // Snapshot outgoing markup once at transition start so the outgoing layer stays static.
+      const snapshotMarkup = currentContentRef.current?.innerHTML ?? null
+      const currentScrollY = window.scrollY
+      setOutgoingSnapshotMarkup(snapshotMarkup)
 
       isTransitioningRef.current = true
       activeTransitionTargetKeyRef.current = nextLocation.key
-      setOutgoingScrollY(window.scrollY)
-      setOutgoingLocation(currentDisplayLocation)
+      setOutgoingScrollY(currentScrollY)
+      // Normalize scroll immediately so incoming live render and final handoff both resolve at top.
+      if (currentScrollY > 0) {
+        window.scrollTo(0, 0)
+      }
       setIncomingLocation(nextLocation)
       setIsTransitioning(true)
     },
@@ -338,8 +348,9 @@ function PageTransition({
       activeTransitionTargetKeyRef.current = null
       setDisplayLocation(completedLocation)
       setIncomingLocation(null)
-      setOutgoingLocation(null)
+      setOutgoingSnapshotMarkup(null)
       setOutgoingDimOpacity(0)
+      setUseSnapshotDimOnly(false)
       setIsTransitioning(false)
 
       const queued = pendingLocationRef.current
@@ -388,6 +399,7 @@ function PageTransition({
     const ease = prefersReducedMotion ? 'power1.out' : PAGE_EASE_NAME
     const startContentOpacity = prefersReducedMotion ? 1 : 0
     const startOutgoingDimOpacity = Math.max(0, Math.min(OUTGOING_DIM_MAX_OPACITY, outgoingDimOpacity))
+    const shouldAnimateOutgoingDim = !useSnapshotDimOnly && startOutgoingDimOpacity <= 0.0001
     const targetLocationKey = incomingLocation.key
     const runId = incomingTweenRunIdRef.current + 1
     incomingTweenRunIdRef.current = runId
@@ -480,7 +492,7 @@ function PageTransition({
         })
       }
 
-      const setOutgoingDimOpacityValue = outgoingDimElement
+      const setOutgoingDimOpacityValue = !useSnapshotDimOnly && outgoingDimElement
         ? gsap.quickSetter(outgoingDimElement, 'opacity')
         : null
       if (outgoingElement) {
@@ -526,8 +538,9 @@ function PageTransition({
           const progress = tween.progress()
           const outgoingProgress = outgoingTween ? outgoingTween.progress() : progress
           if (setOutgoingDimOpacityValue) {
-            const nextDimOpacity =
-              startOutgoingDimOpacity + (OUTGOING_DIM_MAX_OPACITY - startOutgoingDimOpacity) * outgoingProgress
+            const nextDimOpacity = shouldAnimateOutgoingDim
+              ? startOutgoingDimOpacity + (OUTGOING_DIM_MAX_OPACITY - startOutgoingDimOpacity) * outgoingProgress
+              : startOutgoingDimOpacity
             setOutgoingDimOpacityValue(nextDimOpacity)
           }
           if (progress >= TEXT_REVEAL_TRIGGER_PROGRESS) {
@@ -634,7 +647,7 @@ function PageTransition({
       }
       ctx.revert()
     }
-  }, [finishTransition, incomingLocation, isTransitioning, outgoingDimOpacity])
+  }, [finishTransition, incomingLocation, isTransitioning, outgoingDimOpacity, useSnapshotDimOnly])
 
   useLayoutEffect(() => {
     const currentElement = currentContentRef.current
@@ -736,7 +749,7 @@ function PageTransition({
         {renderRoute(displayLocation)}
       </div>
 
-      {isTransitioning && outgoingLocation ? (
+      {isTransitioning && outgoingSnapshotMarkup ? (
         <div
           className="page-transition__outgoing-layer"
           style={
@@ -752,13 +765,19 @@ function PageTransition({
               style={{ transform: `translate3d(0, ${-outgoingScrollY}px, 0)` }}
             >
               <div className="page-transition__outgoing-content">
-                {renderRoute(outgoingLocation)}
                 <div
-                  ref={outgoingDimRef}
-                  className="page-transition__outgoing-dim"
-                  style={{ opacity: outgoingDimOpacity.toFixed(3) }}
-                  aria-hidden="true"
+                  className="page-transition__outgoing-snapshot"
+                  // Controlled snapshot from this app's own DOM.
+                  dangerouslySetInnerHTML={{ __html: outgoingSnapshotMarkup }}
                 />
+                {!useSnapshotDimOnly ? (
+                  <div
+                    ref={outgoingDimRef}
+                    className="page-transition__outgoing-dim"
+                    style={{ opacity: outgoingDimOpacity.toFixed(3) }}
+                    aria-hidden="true"
+                  />
+                ) : null}
               </div>
             </div>
           </div>
