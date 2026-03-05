@@ -6,7 +6,7 @@ import './Navbar.css'
 const navItems = [
   { label: 'HOME', to: '/' },
   { label: 'WORK', to: '/work' },
-  { label: 'FREETIME', to: '/freetime' },
+  { label: 'FREETIME', to: '/freetime', isComingSoon: true },
   { label: 'INFO', to: '/info' },
 ]
 
@@ -190,10 +190,32 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
                 key={item.to}
                 to={item.to}
                 end={item.to === '/'}
-                className={({ isActive }) =>
-                  `nav-menu-link ${isActive ? 'is-active' : ''}`
+                onClick={
+                  item.isComingSoon
+                    ? (event) => {
+                        event.preventDefault()
+                      }
+                    : undefined
                 }
+                onKeyDown={
+                  item.isComingSoon
+                    ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                        }
+                      }
+                    : undefined
+                }
+                className={({ isActive }) =>
+                  `nav-menu-link ${isActive ? 'is-active' : ''}${item.isComingSoon ? ' is-coming-soon' : ''}`
+                }
+                aria-disabled={item.isComingSoon ? true : undefined}
               >
+                {item.isComingSoon ? (
+                  <span className="nav-menu-link__coming-soon" aria-hidden="true">
+                    COMING SOON!
+                  </span>
+                ) : null}
                 <span className="nav-menu-link__label nav-text-swap">
                   <span className="nav-text-swap__primary">{item.label}</span>
                   <span className="nav-text-swap__secondary" aria-hidden="true">
