@@ -18,6 +18,7 @@ type NavbarProps = {
 function Navbar({ theme, onToggleTheme }: NavbarProps) {
   const [isHidden, setIsHidden] = useState(false)
   const [isYearOverlayOpen, setIsYearOverlayOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isBlinking, setIsBlinking] = useState(false)
   const [activeIndicatorY, setActiveIndicatorY] = useState(0)
   const [hasActiveIndicator, setHasActiveIndicator] = useState(false)
@@ -72,6 +73,10 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
     return () => {
       window.removeEventListener('resize', updateActiveIndicator)
     }
+  }, [location.pathname])
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
   }, [location.pathname])
 
   useEffect(() => {
@@ -179,7 +184,24 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
             </span>
           </Link>
 
-          <nav className="site-navbar__menu" aria-label="Primary" ref={menuRef}>
+          <button
+            type="button"
+            className={`site-navbar__burger ${isMobileMenuOpen ? 'is-open' : ''}`}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="site-navbar-menu"
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+          >
+            <span className="site-navbar__burger-line site-navbar__burger-line--top" />
+            <span className="site-navbar__burger-line site-navbar__burger-line--bottom" />
+          </button>
+
+          <nav
+            id="site-navbar-menu"
+            className={`site-navbar__menu ${isMobileMenuOpen ? 'is-open' : ''}`}
+            aria-label="Primary"
+            ref={menuRef}
+          >
             <span
               className={`site-navbar__active-indicator ${hasActiveIndicator ? 'is-visible' : ''}`}
               style={{ transform: `translateY(${activeIndicatorY}px)` }}
@@ -190,13 +212,13 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
                 key={item.to}
                 to={item.to}
                 end={item.to === '/'}
-                onClick={
-                  item.isComingSoon
-                    ? (event) => {
-                        event.preventDefault()
-                      }
-                    : undefined
-                }
+                onClick={(event) => {
+                  if (item.isComingSoon) {
+                    event.preventDefault()
+                    return
+                  }
+                  setIsMobileMenuOpen(false)
+                }}
                 onKeyDown={
                   item.isComingSoon
                     ? (event) => {

@@ -294,3 +294,96 @@
   text-transform: uppercase;
   cursor: pointer;
 }
+
+@media (max-width: 1200px) {
+  .section--footer {
+    min-height: 88vh;
+    min-height: 88svh;
+  }
+
+  .footer-panel {
+    min-height: calc(88vh - (var(--footer-frame) * 2));
+    min-height: calc(88svh - (var(--footer-frame) * 2));
+  }
+
+  .footer-cta-link {
+    left: clamp(80px, 9.333vw, 140px);
+    top: clamp(140px, 18vw, 210px);
+    font-size: clamp(48px, 7.333vw, 78px);
+  }
+
+  .footer-link {
+    font-size: clamp(20px, 2.667vw, 28px);
+  }
+}
+
+@media (max-width: 768px) {
+  .section--footer {
+    --footer-frame: 12px;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: var(--footer-frame);
+  }
+
+  .footer-panel {
+    min-height: calc(100vh - (var(--footer-frame) * 2));
+    min-height: calc(100svh - (var(--footer-frame) * 2));
+    padding: 16px;
+  }
+
+  .footer-cta-link {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -48%);
+    align-items: center;
+    text-align: center;
+    font-size: clamp(46px, 15vw, 72px);
+    line-height: 0.84;
+  }
+
+  .footer-meta {
+    font-size: 11px;
+  }
+
+  .footer-link {
+    font-size: clamp(16px, 5.5vw, 24px);
+    gap: 6px;
+  }
+
+  .footer-link__icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .footer-legal {
+    bottom: 56px;
+  }
+
+  .footer-legal__link {
+    font-size: 10px;
+  }
+
+  .footer-scroll-top {
+    bottom: 12px;
+  }
+
+  .footer-contact-overlay {
+    padding: 18px 14px;
+  }
+
+  .footer-contact-overlay__panel {
+    width: 100%;
+  }
+
+  .footer-contact-overlay.is-open .footer-contact-overlay__panel {
+    transform: translateY(0);
+  }
+
+  .footer-contact-form__field {
+    min-height: 40px;
+  }
+
+  .footer-contact-form__field--message {
+    min-height: 120px;
+  }
+}
