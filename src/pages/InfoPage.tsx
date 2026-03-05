@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
+import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
 import './InfoPage.css'
 
 type RiverStation = {
@@ -272,7 +273,7 @@ function InfoPage() {
 
       <section className="info-section info-section--skills">
         <header className="info-skills-header">
-          <h2 className="info-skills-header__title">Capabilities From Design to Delivery</h2>
+          <h2 className="info-skills-header__title">[SKILLSET]</h2>
         </header>
 
         <div className="info-skills-lanes">
@@ -295,21 +296,7 @@ function InfoPage() {
         </div>
       </section>
 
-      <section className="info-section info-section--contact">
-        <div className="info-contact-panel">
-          <h2 className="info-contact-panel__title">
-            Want to build
-            <br />
-            something sharp?
-          </h2>
-          <p className="info-contact-panel__copy">
-            Contact module lands here next. For now, this is the placeholder canvas for the final call to action.
-          </p>
-          <button type="button" className="info-contact-panel__button">
-            Contact section in progress
-          </button>
-        </div>
-      </section>
+      <SiteFooter />
     </main>
   )
 }
