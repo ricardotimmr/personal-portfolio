@@ -17,7 +17,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage'
 import WorkPage from './pages/WorkPage'
 import './App.css'
 
-const SHOW_WIP_BANNER = true
+const SHOW_WIP_BANNER = false
 const INTRO_SESSION_STORAGE_KEY = 'portfolio:intro-played'
 
 function hasIntroPlayedThisSession() {
