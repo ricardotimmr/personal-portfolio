@@ -222,3 +222,54 @@
     opacity: 0;
   }
 }
+
+@media (max-width: 1024px) {
+  .section--gallery {
+    min-height: 92vh;
+    min-height: 92svh;
+  }
+
+  .gallery-title {
+    top: clamp(74px, 9.375vw, 96px);
+  }
+
+  .gallery-card--landscape {
+    width: clamp(340px, 66.406vw, 480px);
+    height: clamp(204px, 39.844vw, 288px);
+  }
+
+  .gallery-card--portrait {
+    width: clamp(228px, 44.531vw, 320px);
+    height: clamp(292px, 57.031vw, 410px);
+  }
+}
+
+@media (max-width: 768px) {
+  .section--gallery {
+    min-height: 84vh;
+    min-height: 84svh;
+  }
+
+  .gallery-title {
+    top: 94px;
+    font-size: clamp(14px, 3.75vw, 16px);
+  }
+
+  .gallery-card--landscape {
+    width: clamp(250px, 82vw, 360px);
+    height: clamp(150px, 49vw, 216px);
+  }
+
+  .gallery-card--portrait {
+    width: clamp(190px, 62vw, 280px);
+    height: clamp(244px, 80vw, 360px);
+  }
+
+  .gallery-center-action {
+    display: none;
+  }
+
+  .gallery-drag-hint {
+    display: none;
+  }
+}

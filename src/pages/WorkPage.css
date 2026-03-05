@@ -253,3 +253,92 @@
   display: block;
   white-space: nowrap;
 }
+
+@media (max-width: 1100px) {
+  .work-section--gallery {
+    --work-edge-frame: clamp(24px, 3.636vw, 40px);
+    --work-image-width: clamp(290px, 42.727vw, 470px);
+    --work-image-height: clamp(398px, 57.909vw, 640px);
+    --work-image-gap: clamp(20px, 2.909vw, 32px);
+    --work-columns-gap: clamp(16px, 1.818vw, 20px);
+    padding-top: clamp(118px, 14.545vw, 160px);
+    padding-bottom: clamp(72px, 8vw, 88px);
+  }
+
+  .work-project-panel-fixed {
+    top: clamp(200px, 29.091vw, 320px);
+    left: calc(var(--work-edge-frame) + var(--work-image-width) + var(--work-image-gap));
+    right: var(--work-edge-frame);
+    transform: none;
+  }
+
+  .work-project-panel-fixed__content {
+    grid-template-columns: 1fr;
+    row-gap: clamp(14px, 2vw, 22px);
+  }
+
+  .work-project__block--role {
+    justify-self: start;
+  }
+
+  .work-project__label {
+    margin-bottom: clamp(8px, 0.909vw, 10px);
+    font-size: clamp(11px, 1.273vw, 13px);
+    letter-spacing: 0.14em;
+  }
+
+  .work-project__copy {
+    max-width: min(300px, 100%);
+    font-size: clamp(9px, 1.091vw, 10px);
+    line-height: 1.5;
+  }
+
+  .work-project__copy--project {
+    -webkit-line-clamp: 3;
+  }
+
+  .work-project__copy--role {
+    white-space: normal;
+  }
+
+  .work-project__role-line {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 768px) {
+  .work-section--gallery {
+    --work-edge-frame: 16px;
+    --work-image-width: 100%;
+    --work-image-height: clamp(360px, 122vw, 620px);
+    --work-image-gap: 0px;
+    padding-top: 106px;
+    padding-right: var(--work-edge-frame);
+    padding-bottom: 60px;
+    padding-left: var(--work-edge-frame);
+  }
+
+  .work-gallery-layout {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .work-gallery {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .work-project {
+    width: 100%;
+  }
+
+  .work-project__media {
+    width: 100%;
+    height: var(--work-image-height);
+  }
+
+  .work-project-panel,
+  .work-project-panel-fixed {
+    display: none;
+  }
+}

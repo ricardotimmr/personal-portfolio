@@ -216,7 +216,7 @@ function InfoPage() {
       <section className="info-section info-section--hero">
         <div className="info-hero">
           <h1 className="info-hero__title">
-            Work, Study <span>& Context</span>
+            Work, Study <span>& Skills</span>
           </h1>
           <p className="info-hero__copy">
             I design and build digital products with a strong focus on clarity, motion and structure.
