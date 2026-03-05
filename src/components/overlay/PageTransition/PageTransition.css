@@ -67,6 +67,17 @@
   transform-style: preserve-3d;
 }
 
+.page-transition__outgoing-snapshot {
+  width: 100%;
+  min-height: 100svh;
+}
+
+/* Outgoing layer is a static snapshot; disable nested motion to avoid visual jitter. */
+.page-transition__outgoing-snapshot * {
+  animation: none !important;
+  transition: none !important;
+}
+
 .page-transition__outgoing-dim {
   position: absolute;
   inset: 0;
@@ -85,7 +96,7 @@
 
 .page-transition__outgoing-layer .project-scroll-minimap {
   opacity: 1 !important;
-  transform: translate3d(0, 0, 0) !important;
+  transform: translate3d(0, var(--page-transition-outgoing-scroll-y, 0px), 0) !important;
   filter: blur(0) !important;
   transition: none !important;
 }

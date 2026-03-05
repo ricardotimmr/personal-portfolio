@@ -14,10 +14,15 @@ function SmoothScroll({ deferRouteSync = false }: SmoothScrollProps) {
   const frameIdRef = useRef<number | null>(null)
   const currentYRef = useRef(0)
   const targetYRef = useRef(0)
+  const deferRouteSyncRef = useRef(deferRouteSync)
   const positionsRef = useRef<Map<string, number>>(new Map())
   const activeLocationKeyRef = useRef('')
   const location = useLocation()
   const navigationType = useNavigationType()
+
+  useEffect(() => {
+    deferRouteSyncRef.current = deferRouteSync
+  }, [deferRouteSync])
 
   useEffect(() => {
     currentYRef.current = window.scrollY
@@ -61,6 +66,10 @@ function SmoothScroll({ deferRouteSync = false }: SmoothScrollProps) {
     }
 
     const onWheel = (event: WheelEvent) => {
+      if (deferRouteSyncRef.current) {
+        return
+      }
+
       if (event.defaultPrevented || (event as WheelEvent & { __galleryWheelHandled?: boolean }).__galleryWheelHandled) {
         return
       }
@@ -123,6 +132,21 @@ function SmoothScroll({ deferRouteSync = false }: SmoothScrollProps) {
       window.removeEventListener('resize', onResize)
     }
   }, [])
+
+  useEffect(() => {
+    if (!deferRouteSync) {
+      return
+    }
+
+    if (frameIdRef.current !== null) {
+      window.cancelAnimationFrame(frameIdRef.current)
+      frameIdRef.current = null
+    }
+
+    const y = window.scrollY
+    currentYRef.current = y
+    targetYRef.current = y
+  }, [deferRouteSync])
 
   useEffect(() => {
     if (deferRouteSync) {
