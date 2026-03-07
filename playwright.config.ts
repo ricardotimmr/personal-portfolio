@@ -26,6 +26,19 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
       },
     },
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
+    {
+      name: 'edge',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'msedge',
+      },
+    },
   ],
   webServer: {
     command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${PREVIEW_PORT}`,

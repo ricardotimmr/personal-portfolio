@@ -60,8 +60,10 @@ The visual direction is minimal, structured, and typography-driven, with subtle 
 
 - Unit tests: `npm run test:unit`
 - Unit tests (watch): `npm run test:unit:watch`
-- E2E (Chromium): `npm run test:e2e`
-- All tests: `npm run test:all`
+- E2E (Chromium + WebKit/Safari): `npm run test:e2e`
+- E2E (Edge): `npm run test:e2e:edge`
+- E2E (all configured browsers): `npm run test:e2e:all`
+- All tests (unit + Chromium/WebKit): `npm run test:all`
 
 The E2E suite covers cross-platform-sensitive behavior such as:
 
@@ -69,6 +71,9 @@ The E2E suite covers cross-platform-sensitive behavior such as:
 - Info page river reveal progression
 - Reduced-motion fallback behavior
 - Wheel `deltaMode` normalization for scroll consistency
+- Theming persistence and toggle behavior
+- Hover and interaction states for key navigation/gallery elements
+- Route layout checks for horizontal overflow regressions
 
 ---
 

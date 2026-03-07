@@ -18,6 +18,13 @@
   opacity: 0;
 }
 
+@supports not (mix-blend-mode: difference) {
+  .site-navbar {
+    color: var(--color-black);
+    mix-blend-mode: normal;
+  }
+}
+
 .site-navbar__layout {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

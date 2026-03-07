@@ -88,6 +88,14 @@
   mix-blend-mode: difference;
 }
 
+@supports not (mix-blend-mode: difference) {
+  .gallery-center-action {
+    color: var(--color-black);
+    mix-blend-mode: normal;
+    opacity: 0.78;
+  }
+}
+
 .gallery-center-action__cluster {
   position: relative;
   width: 10px;
