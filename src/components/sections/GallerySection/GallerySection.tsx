@@ -12,6 +12,7 @@ import {
   GALLERY_SCROLL_MAX_WHEEL_DELTA,
   GALLERY_SCROLL_WHEEL_DRAG_FACTOR,
 } from '../../navigation/SmoothScroll/scrollPhysics'
+import { normalizeWheelDeltaToPixels } from '../../navigation/SmoothScroll/normalizeWheelDelta'
 import { type ResponsiveProjectImage, PROJECTS } from '../../../data/projects'
 import ResponsiveImage from '../../common/ResponsiveImage'
 import './GallerySection.css'
@@ -430,8 +431,11 @@ function GallerySection() {
       return
     }
 
+    const viewportWidth = viewportRef.current?.clientWidth ?? window.innerWidth
+    const normalizedDeltaX = normalizeWheelDeltaToPixels(event.deltaX, event.deltaMode, viewportWidth)
+    const normalizedDeltaY = normalizeWheelDeltaToPixels(event.deltaY, event.deltaMode, viewportWidth)
     const isHorizontalIntent =
-      Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.1 || event.shiftKey
+      Math.abs(normalizedDeltaX) > Math.abs(normalizedDeltaY) * 1.1 || event.shiftKey
     if (!isHorizontalIntent) {
       return
     }
@@ -441,7 +445,7 @@ function GallerySection() {
     isFocusCenterAnimationRef.current = false
 
     const dominantDelta =
-      Math.abs(event.deltaX) >= Math.abs(event.deltaY) ? event.deltaX : event.deltaY
+      Math.abs(normalizedDeltaX) >= Math.abs(normalizedDeltaY) ? normalizedDeltaX : normalizedDeltaY
 
     const clampedDelta = Math.max(
       -GALLERY_SCROLL_MAX_WHEEL_DELTA,

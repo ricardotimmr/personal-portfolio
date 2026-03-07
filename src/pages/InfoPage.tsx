@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
+import { clamp01, computeRiverRevealProgress, isRiverStationVisible } from './infoRiverReveal'
 import './InfoPage.css'
 
 type RiverStation = {
@@ -108,6 +109,17 @@ const RIVER_X_SCALE = 11.8
 const RIVER_STATION_REVEAL_LAG_PX = -42
 const RIVER_Y_JITTERS = [0, 34, -26, 18, -41, 29, -12]
 
+function supportsMaskReveal() {
+  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
+    return false
+  }
+
+  return (
+    CSS.supports('mask-image', 'linear-gradient(#000, transparent)') ||
+    CSS.supports('-webkit-mask-image', 'linear-gradient(#000, transparent)')
+  )
+}
+
 function buildRiverPath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) {
     return ''
@@ -163,29 +175,47 @@ function InfoPage() {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const stationRevealYPositions = riverPoints.map(({ y }) => y)
+    const hasMaskSupport = supportsMaskReveal()
+    trackElement.classList.toggle('info-river-track--clip-fallback', !hasMaskSupport)
+
+    const setRevealState = (progress: number, trackHeight: number) => {
+      const clampedProgress = clamp01(progress)
+      const safeTrackHeight = Math.max(1, trackHeight)
+      trackElement.style.setProperty('--river-progress', clampedProgress.toFixed(4))
+      trackElement.style.setProperty(
+        '--river-reveal-cutoff-px',
+        `${(clampedProgress * safeTrackHeight).toFixed(2)}px`,
+      )
+    }
+    const resetRevealState = () => {
+      trackElement.classList.remove('info-river-track--clip-fallback')
+      trackElement.style.removeProperty('--river-progress')
+      trackElement.style.removeProperty('--river-reveal-cutoff-px')
+    }
 
     if (prefersReducedMotion) {
-      trackElement.style.setProperty('--river-progress', '1')
+      const reducedMotionHeight = Math.max(trackElement.getBoundingClientRect().height, trackElement.offsetHeight)
+      setRevealState(1, reducedMotionHeight)
       stationElements.forEach((stationElement) => stationElement.classList.add('is-visible'))
-      return () => undefined
+      return () => {
+        resetRevealState()
+      }
     }
 
     let rafId: number | null = null
-    const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 
     const updateRiverReveal = () => {
       rafId = null
       const trackRect = trackElement.getBoundingClientRect()
-      const revealStartY = window.innerHeight * 0.8
-      const revealRange = trackRect.height + window.innerHeight * 0.52
-      const progress = clamp01((revealStartY - trackRect.top) / Math.max(1, revealRange))
-      trackElement.style.setProperty('--river-progress', progress.toFixed(4))
-      trackElement.style.setProperty('--river-reveal-cutoff-px', `${(progress * trackRect.height).toFixed(2)}px`)
+      const progress = computeRiverRevealProgress(trackRect.top, trackRect.height, window.innerHeight)
+      setRevealState(progress, trackRect.height)
 
       const revealedRoadY = progress * trackRect.height
       stationElements.forEach((stationElement, stationIndex) => {
-        const stationRevealY = stationRevealYPositions[stationIndex] + RIVER_STATION_REVEAL_LAG_PX
-        stationElement.classList.toggle('is-visible', revealedRoadY >= stationRevealY)
+        stationElement.classList.toggle(
+          'is-visible',
+          isRiverStationVisible(revealedRoadY, stationRevealYPositions[stationIndex], RIVER_STATION_REVEAL_LAG_PX),
+        )
       })
     }
 
@@ -206,8 +236,7 @@ function InfoPage() {
       }
       window.removeEventListener('scroll', requestRiverUpdate)
       window.removeEventListener('resize', requestRiverUpdate)
-      trackElement.style.removeProperty('--river-progress')
-      trackElement.style.removeProperty('--river-reveal-cutoff-px')
+      resetRevealState()
     }
   }, [riverPoints])
 

@@ -5,6 +5,7 @@ import {
   PAGE_SCROLL_MAX_WHEEL_DELTA,
   PAGE_SCROLL_WHEEL_DRAG_FACTOR,
 } from './scrollPhysics'
+import { normalizeWheelDeltaToPixels } from './normalizeWheelDelta'
 
 type SmoothScrollProps = {
   deferRouteSync?: boolean
@@ -76,14 +77,16 @@ function SmoothScroll({ deferRouteSync = false }: SmoothScrollProps) {
 
       const target = event.target as HTMLElement | null
       const inGallery = target?.closest?.('[data-gallery-scroll]') !== null
+      const normalizedDeltaX = normalizeWheelDeltaToPixels(event.deltaX, event.deltaMode, window.innerWidth)
+      const normalizedDeltaY = normalizeWheelDeltaToPixels(event.deltaY, event.deltaMode, window.innerHeight)
       const isHorizontalIntent =
-        Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.1 && Math.abs(event.deltaX) > 0.5
+        Math.abs(normalizedDeltaX) > Math.abs(normalizedDeltaY) * 1.1 && Math.abs(normalizedDeltaX) > 0.5
 
       if (event.ctrlKey || (inGallery && isHorizontalIntent)) {
         return
       }
 
-      const verticalDelta = event.deltaY
+      const verticalDelta = normalizedDeltaY
       if (Math.abs(verticalDelta) < 0.1) {
         return
       }

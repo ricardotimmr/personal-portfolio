@@ -20,7 +20,8 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  contain: layout paint;
+  contain: paint;
+  isolation: isolate;
 }
 
 .page-transition__outgoing-layer {
@@ -126,4 +127,17 @@
 .page-transition__reveal-token {
   display: inline-block;
   white-space: pre;
+}
+
+.page-transition.is-performance-fallback .page-transition__outgoing-layer {
+  perspective: none;
+  transform-style: flat;
+}
+
+.page-transition.is-performance-fallback .page-transition__outgoing-motion,
+.page-transition.is-performance-fallback .page-transition__outgoing-content,
+.page-transition.is-performance-fallback .page-transition__incoming-motion,
+.page-transition.is-performance-fallback .page-transition__incoming-content {
+  transform-style: flat;
+  backface-visibility: visible;
 }
