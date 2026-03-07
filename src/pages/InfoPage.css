@@ -92,6 +92,10 @@
   height: 100%;
   pointer-events: none;
   overflow: visible;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
   -webkit-mask-image: linear-gradient(
     to bottom,
     #000 0,
@@ -109,6 +113,14 @@
     transparent calc(var(--river-reveal-cutoff-px) + 26px)
   );
   will-change: -webkit-mask-image, mask-image;
+}
+
+.info-river-track.info-river-track--clip-fallback .info-river-track__svg {
+  -webkit-mask-image: none;
+  mask-image: none;
+  -webkit-clip-path: inset(0 0 calc((1 - var(--river-progress)) * 100%) 0);
+  clip-path: inset(0 0 calc((1 - var(--river-progress)) * 100%) 0);
+  will-change: clip-path;
 }
 
 .info-river-path {
