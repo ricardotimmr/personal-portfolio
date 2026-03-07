@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { useLocation, type Location } from 'react-router-dom'
 import { ensurePageMotionEase, PAGE_MOTION_EASE_NAME } from '../shared/pageMotionEase'
-import { isWindowsChromiumBrowser } from '../../../utils/browser'
+import { shouldUsePageTransitionPerformanceFallback } from '../../../utils/browser'
 import './PageTransition.css'
 
 const PAGE_INCOMING_DELAY_MS = 0
@@ -269,7 +269,7 @@ function PageTransition({
   const [outgoingDimOpacity, setOutgoingDimOpacity] = useState(0)
   const [useSnapshotDimOnly, setUseSnapshotDimOnly] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [isWindowsChromiumTransitionFallback] = useState(() => isWindowsChromiumBrowser())
+  const [isPerformanceFallback] = useState(() => shouldUsePageTransitionPerformanceFallback())
   const currentContentRef = useRef<HTMLDivElement | null>(null)
   const incomingMotionRef = useRef<HTMLDivElement | null>(null)
   const outgoingMotionRef = useRef<HTMLDivElement | null>(null)
@@ -286,20 +286,20 @@ function PageTransition({
 
   const getTextRevealOptions = useCallback(
     (prefersReducedMotion: boolean): TextRevealOptions => {
-      const shouldUseReducedFallback = prefersReducedMotion || isWindowsChromiumTransitionFallback
+      const shouldUseReducedFallback = prefersReducedMotion || isPerformanceFallback
       return {
         blurPx: shouldUseReducedFallback ? 0 : TEXT_REVEAL_BLUR_PX,
-        maxAnimatedNodes: isWindowsChromiumTransitionFallback
+        maxAnimatedNodes: isPerformanceFallback
           ? WINDOWS_CHROMIUM_TEXT_REVEAL_MAX_ANIMATED_NODES
           : TEXT_REVEAL_MAX_ANIMATED_NODES,
-        maxTargets: isWindowsChromiumTransitionFallback
+        maxTargets: isPerformanceFallback
           ? WINDOWS_CHROMIUM_TEXT_REVEAL_MAX_TARGETS
           : TEXT_REVEAL_MAX_TARGETS,
         offsetY: shouldUseReducedFallback ? WINDOWS_CHROMIUM_TEXT_REVEAL_OFFSET_Y : TEXT_REVEAL_OFFSET_Y,
-        splitIntoLines: !isWindowsChromiumTransitionFallback,
+        splitIntoLines: !isPerformanceFallback,
       }
     },
-    [isWindowsChromiumTransitionFallback],
+    [isPerformanceFallback],
   )
 
   useEffect(() => {
@@ -430,7 +430,7 @@ function PageTransition({
       window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const revealOptions = getTextRevealOptions(prefersReducedMotion)
-    const useForce3D = !isWindowsChromiumTransitionFallback
+    const useForce3D = !isPerformanceFallback
 
     const duration = prefersReducedMotion
       ? REDUCED_MOTION_INCOMING_DURATION_S
@@ -716,7 +716,7 @@ function PageTransition({
     getTextRevealOptions,
     incomingLocation,
     isTransitioning,
-    isWindowsChromiumTransitionFallback,
+    isPerformanceFallback,
     outgoingDimOpacity,
     useSnapshotDimOnly,
   ])
@@ -849,7 +849,7 @@ function PageTransition({
   return (
     <div
       className={`page-transition ${isTransitioning ? 'is-transitioning' : ''}${
-        isWindowsChromiumTransitionFallback ? ' is-performance-fallback' : ''
+        isPerformanceFallback ? ' is-performance-fallback' : ''
       }`}
     >
       <div ref={currentContentRef} className="page-transition__current">

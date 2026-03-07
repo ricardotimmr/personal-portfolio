@@ -5,6 +5,7 @@ import ProjectDetailHeader from '../components/sections/ProjectDetail/ProjectDet
 import ProjectDetailMinimap from '../components/sections/ProjectDetail/ProjectDetailMinimap'
 import ProjectDetailNarrative from '../components/sections/ProjectDetail/ProjectDetailNarrative'
 import { useProjectDetailMinimap } from '../components/sections/ProjectDetail/useProjectDetailMinimap'
+import { normalizeWheelDeltaToPixels } from '../components/navigation/SmoothScroll/normalizeWheelDelta'
 import { getProjectBySlug, PROJECTS } from '../data/projects'
 import './ProjectDetailPage.css'
 
@@ -173,8 +174,9 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
         return
       }
 
+      const normalizedDeltaY = normalizeWheelDeltaToPixels(event.deltaY, event.deltaMode, window.innerHeight)
       const direction: BoundaryDirection | null =
-        event.deltaY < 0 ? 'prev' : event.deltaY > 0 ? 'next' : null
+        normalizedDeltaY < 0 ? 'prev' : normalizedDeltaY > 0 ? 'next' : null
       if (!direction) {
         return
       }
@@ -199,7 +201,7 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
         edgeAccumulatedRef.current = 0
       }
 
-      const contribution = Math.min(Math.abs(event.deltaY), MAX_DELTA_CONTRIBUTION)
+      const contribution = Math.min(Math.abs(normalizedDeltaY), MAX_DELTA_CONTRIBUTION)
       edgeAccumulatedRef.current += contribution
       const progress = Math.min(1, edgeAccumulatedRef.current / EDGE_NAV_THRESHOLD)
 

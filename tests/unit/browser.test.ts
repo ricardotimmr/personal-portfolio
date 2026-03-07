@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { isWindowsChromiumBrowser } from '../../src/utils/browser'
+import {
+  isSafariBrowser,
+  isWindowsChromiumBrowser,
+  shouldUsePageTransitionPerformanceFallback,
+} from '../../src/utils/browser'
 
 const originalNavigator = globalThis.navigator
 
@@ -31,7 +35,7 @@ describe('isWindowsChromiumBrowser', () => {
     expect(isWindowsChromiumBrowser()).toBe(true)
   })
 
-  it('returns false for Edge on Windows', () => {
+  it('returns true for Edge on Windows', () => {
     setNavigatorStub({
       userAgent:
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0',
@@ -42,7 +46,7 @@ describe('isWindowsChromiumBrowser', () => {
       },
     })
 
-    expect(isWindowsChromiumBrowser()).toBe(false)
+    expect(isWindowsChromiumBrowser()).toBe(true)
   })
 
   it('returns false for Chrome on macOS', () => {
@@ -57,5 +61,79 @@ describe('isWindowsChromiumBrowser', () => {
     })
 
     expect(isWindowsChromiumBrowser()).toBe(false)
+  })
+})
+
+describe('isSafariBrowser', () => {
+  it('returns true for Safari user agent', () => {
+    setNavigatorStub({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+      platform: 'MacIntel',
+      userAgentData: {
+        brands: [],
+        platform: 'macOS',
+      },
+    })
+
+    expect(isSafariBrowser()).toBe(true)
+  })
+
+  it('returns false for Chromium user agent', () => {
+    setNavigatorStub({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      platform: 'Win32',
+      userAgentData: {
+        brands: [{ brand: 'Chromium' }],
+        platform: 'Windows',
+      },
+    })
+
+    expect(isSafariBrowser()).toBe(false)
+  })
+})
+
+describe('shouldUsePageTransitionPerformanceFallback', () => {
+  it('enables fallback for Windows Chromium browsers', () => {
+    setNavigatorStub({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      platform: 'Win32',
+      userAgentData: {
+        brands: [{ brand: 'Chromium' }],
+        platform: 'Windows',
+      },
+    })
+
+    expect(shouldUsePageTransitionPerformanceFallback()).toBe(true)
+  })
+
+  it('enables fallback for Safari', () => {
+    setNavigatorStub({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+      platform: 'MacIntel',
+      userAgentData: {
+        brands: [],
+        platform: 'macOS',
+      },
+    })
+
+    expect(shouldUsePageTransitionPerformanceFallback()).toBe(true)
+  })
+
+  it('keeps fallback disabled for non-Windows Chromium and non-Safari browsers', () => {
+    setNavigatorStub({
+      userAgent:
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      platform: 'Linux x86_64',
+      userAgentData: {
+        brands: [{ brand: 'Chromium' }],
+        platform: 'Linux',
+      },
+    })
+
+    expect(shouldUsePageTransitionPerformanceFallback()).toBe(false)
   })
 })

@@ -13,9 +13,13 @@ function getInitialTheme(): Theme {
     return 'light'
   }
 
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-  if (isTheme(stored)) {
-    return stored
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
+    if (isTheme(stored)) {
+      return stored
+    }
+  } catch {
+    return 'light'
   }
 
   return 'light'
@@ -27,7 +31,11 @@ export function useTheme() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.classList.add('theme-ready')
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    } catch {
+      // Ignore storage write failures in restricted browsing modes.
+    }
   }, [theme])
 
   const toggleTheme = useCallback(() => {

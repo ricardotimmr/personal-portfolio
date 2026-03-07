@@ -120,6 +120,14 @@ function supportsMaskReveal() {
   )
 }
 
+function supportsClipPathReveal() {
+  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
+    return false
+  }
+
+  return CSS.supports('clip-path', 'inset(0 0 0 0)') || CSS.supports('-webkit-clip-path', 'inset(0 0 0 0)')
+}
+
 function buildRiverPath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) {
     return ''
@@ -176,7 +184,10 @@ function InfoPage() {
 
     const stationRevealYPositions = riverPoints.map(({ y }) => y)
     const hasMaskSupport = supportsMaskReveal()
-    trackElement.classList.toggle('info-river-track--clip-fallback', !hasMaskSupport)
+    const hasClipPathSupport = supportsClipPathReveal()
+    const canUseClipFallback = !hasMaskSupport && hasClipPathSupport
+    const canAnimateReveal = hasMaskSupport || canUseClipFallback
+    trackElement.classList.toggle('info-river-track--clip-fallback', canUseClipFallback)
 
     const setRevealState = (progress: number, trackHeight: number) => {
       const clampedProgress = clamp01(progress)
@@ -196,6 +207,15 @@ function InfoPage() {
     if (prefersReducedMotion) {
       const reducedMotionHeight = Math.max(trackElement.getBoundingClientRect().height, trackElement.offsetHeight)
       setRevealState(1, reducedMotionHeight)
+      stationElements.forEach((stationElement) => stationElement.classList.add('is-visible'))
+      return () => {
+        resetRevealState()
+      }
+    }
+
+    if (!canAnimateReveal) {
+      const fallbackHeight = Math.max(trackElement.getBoundingClientRect().height, trackElement.offsetHeight)
+      setRevealState(1, fallbackHeight)
       stationElements.forEach((stationElement) => stationElement.classList.add('is-visible'))
       return () => {
         resetRevealState()

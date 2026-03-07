@@ -68,6 +68,14 @@
   mix-blend-mode: difference;
 }
 
+@supports not (mix-blend-mode: difference) {
+  .work-project-action {
+    color: var(--color-black);
+    mix-blend-mode: normal;
+    opacity: 0.78;
+  }
+}
+
 .work-project-action__cluster {
   position: relative;
   width: 10px;
