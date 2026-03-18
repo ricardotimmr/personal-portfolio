@@ -45,7 +45,7 @@ const dragReleaseMinVelocity = 0.025
 const dragReleaseMaxDistancePx = 1500
 const dragReleaseVelocityCap = 1.8
 const dragClickThresholdPx = 6
-const centerNavigationThresholdPx = 1
+const centerNavigationThresholdPx = 4
 const focusCenterInertialLerp = GALLERY_SCROLL_INERTIAL_LERP * 0.62
 let persistedGalleryTrackX: number | null = null
 
@@ -58,6 +58,18 @@ function buildSlides(): GallerySlide[] {
     image: project.thumbnailImage,
     slug: project.slug,
   }))
+}
+
+function supportsGalleryPointerInteraction(event: ReactPointerEvent<HTMLDivElement>) {
+  if (!event.isPrimary) {
+    return false
+  }
+
+  if (event.pointerType === 'mouse') {
+    return event.button === 0
+  }
+
+  return event.pointerType === 'touch' || event.pointerType === 'pen'
 }
 
 function GallerySection() {
@@ -324,9 +336,8 @@ function GallerySection() {
     const viewportCenterX = viewportRect.left + viewportRect.width / 2
     const cardCenterX = cardRect.left + cardRect.width / 2
     const centerDelta = Math.abs(cardCenterX - viewportCenterX)
-    const isSettled = Math.abs(targetXRef.current - currentXRef.current) <= 0.2
 
-    return centerDelta <= centerNavigationThresholdPx && isSettled && animationFrameRef.current === null
+    return centerDelta <= centerNavigationThresholdPx
   }
 
   useEffect(() => {
@@ -457,7 +468,7 @@ function GallerySection() {
   }
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0) {
+    if (!supportsGalleryPointerInteraction(event)) {
       return
     }
 
