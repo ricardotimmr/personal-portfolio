@@ -1,4 +1,5 @@
 import projectContent from '../content/projects/projects.json'
+import { toSafeExternalUrl } from '../utils/urlSafety'
 
 export type ProjectOrientation = 'landscape' | 'portrait'
 
@@ -211,11 +212,6 @@ function resolveProjectImage(
   }
 }
 
-function normalizeVisitUrl(value: string | undefined) {
-  const trimmed = value?.trim()
-  return trimmed ? trimmed : undefined
-}
-
 function isProjectRecord(value: unknown): value is ProjectContentRecord {
   if (!value || typeof value !== 'object') {
     return false
@@ -300,7 +296,7 @@ function buildProjects() {
       orientation: project.orientation,
       description: project.description,
       roles: [...project.roles],
-      visitUrl: normalizeVisitUrl(project.visitUrl),
+      visitUrl: toSafeExternalUrl(project.visitUrl),
       imageSrc: thumbnailImage.src,
       thumbnailImage,
       heroImage,

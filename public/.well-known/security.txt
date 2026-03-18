@@ -1,0 +1,5 @@
+Contact: mailto:ricardo.timmr@gmail.com
+Canonical: https://ricardo-timm.com/.well-known/security.txt
+Policy: https://ricardo-timm.com/privacy-policy
+Preferred-Languages: de, en
+Expires: 2027-03-19T00:00:00.000Z

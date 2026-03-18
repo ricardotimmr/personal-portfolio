@@ -35,7 +35,8 @@ function ProjectDetailHeader({ title, description, roles, visitUrl }: ProjectDet
         className={`project-detail-visit ${hasVisitUrl ? '' : 'is-disabled'}`}
         href={visitUrl}
         target={hasVisitUrl ? '_blank' : undefined}
-        rel={hasVisitUrl ? 'noreferrer' : undefined}
+        rel={hasVisitUrl ? 'noopener noreferrer external' : undefined}
+        referrerPolicy={hasVisitUrl ? 'no-referrer' : undefined}
         onClick={(event) => {
           if (!hasVisitUrl) {
             event.preventDefault()

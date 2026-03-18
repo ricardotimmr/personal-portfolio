@@ -77,6 +77,20 @@ The E2E suite covers cross-platform-sensitive behavior such as:
 
 ---
 
+## Security & Trust Hardening
+
+This project is configured with strict response headers (CSP, HSTS, anti-framing, MIME sniffing protection),
+local font hosting, and restricted outbound resource policies.
+
+Operational checks that should stay enabled in production:
+
+- Use `ricardo-timm.com` as canonical domain and redirect `www` to apex
+- Keep DNS records and TLS certificate ownership stable over time
+- Enable DNSSEC and CAA records at DNS provider level (outside this repository)
+- Keep privacy/legal content aligned with actual external resource usage
+
+---
+
 ## Status
 
 Currently in design and conceptual development phase.
