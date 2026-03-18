@@ -19,9 +19,9 @@
   width: 50%;
   height: 100%;
   background: var(--color-white);
-  transform: translate3d(0, 0, 0);
+  transform: translateX(0);
   will-change: transform;
-  backface-visibility: hidden;
+  backface-visibility: visible;
 }
 
 .initial-loader__door--left {

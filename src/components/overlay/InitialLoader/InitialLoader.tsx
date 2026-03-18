@@ -135,7 +135,7 @@ function InitialLoader({ onReveal, onComplete }: InitialLoaderProps) {
     gsap.set([leftDoor, rightDoor], { clearProps: 'transform' })
     gsap.set([leftDoor, rightDoor], {
       xPercent: 0,
-      force3D: true,
+      force3D: false,
       willChange: 'transform',
     })
 
@@ -143,7 +143,7 @@ function InitialLoader({ onReveal, onComplete }: InitialLoaderProps) {
       xPercent: (index: number) => (index === 0 ? -104 : 104),
       duration: durationS,
       ease,
-      force3D: true,
+      force3D: false,
       overwrite: 'auto',
       onComplete: () => {
         gsap.set([leftDoor, rightDoor], { clearProps: 'willChange' })

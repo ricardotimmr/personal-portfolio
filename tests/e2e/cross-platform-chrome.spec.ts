@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 
 const INTRO_SESSION_STORAGE_KEY = 'portfolio:intro-played'
 const THEME_STORAGE_KEY = 'rt-site-theme'
+const WINDOWS_CHROMIUM_USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript((introStorageKey) => {
@@ -39,15 +41,13 @@ test('page transition performance fallback toggles for browser-specific profiles
   const className = (await page.locator('.page-transition').getAttribute('class')) ?? ''
   const shouldUseFallback = await page.evaluate(() => {
     const userAgent = navigator.userAgent || ''
-    const platform = navigator.platform || ''
-    const isWindowsPlatform = /windows/i.test(userAgent) || /win/i.test(platform)
     const isSafariBrowser =
       /safari\//i.test(userAgent) &&
       !/chrom(e|ium)\//i.test(userAgent) &&
       !/edg\//i.test(userAgent) &&
       !/opr\//i.test(userAgent) &&
       !/firefox\//i.test(userAgent)
-    return isWindowsPlatform || isSafariBrowser
+    return isSafariBrowser
   })
   expect(className.includes('is-performance-fallback')).toBe(shouldUseFallback)
 })
@@ -136,6 +136,44 @@ test('gallery interaction marker opens when hovering centered card', async ({ pa
   await expect
     .poll(async () => (await page.locator('.gallery-center-action').getAttribute('class')) ?? '')
     .toContain('gallery-center-action--open')
+})
+
+test.describe('windows chromium animation parity', () => {
+  test.use({
+    userAgent: WINDOWS_CHROMIUM_USER_AGENT,
+  })
+
+  test('loader and page transition stay on the full animation path for Windows Chromium', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(browserName !== 'chromium')
+
+    await page.addInitScript((introStorageKey) => {
+      window.sessionStorage.removeItem(introStorageKey)
+    }, INTRO_SESSION_STORAGE_KEY)
+
+    await page.goto('/')
+
+    const loader = page.locator('.initial-loader')
+    await expect(loader).not.toHaveClass(/performance-fallback/)
+    await expect(page.locator('.app-shell')).toHaveClass(/is-revealed/)
+
+    const pageTransition = page.locator('.page-transition')
+    await expect(pageTransition).not.toHaveClass(/is-performance-fallback/)
+
+    await page.getByRole('link', { name: 'INFO' }).click()
+    await expect(page).toHaveURL(/\/info$/)
+    await expect
+      .poll(async () => ((await pageTransition.getAttribute('class')) ?? '').includes('is-transitioning'))
+      .toBe(false)
+
+    await page.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight * 0.5)
+    })
+
+    await expect.poll(async () => page.locator('.info-river-station.is-visible').count()).toBeGreaterThan(0)
+  })
 })
 
 test.describe('mobile gallery', () => {

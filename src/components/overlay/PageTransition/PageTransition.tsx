@@ -45,9 +45,9 @@ const TEXT_REVEAL_HANDOFF_MIN_REMAINING = 0.4
 const TEXT_REVEAL_HANDOFF_MIN_DURATION_S = 0.28
 const TEXT_REVEAL_MAX_TARGETS = 32
 const TEXT_REVEAL_MAX_ANIMATED_NODES = 96
-const WINDOWS_CHROMIUM_TEXT_REVEAL_MAX_TARGETS = 18
-const WINDOWS_CHROMIUM_TEXT_REVEAL_MAX_ANIMATED_NODES = 54
-const WINDOWS_CHROMIUM_TEXT_REVEAL_OFFSET_Y = 4
+const PERFORMANCE_FALLBACK_TEXT_REVEAL_MAX_TARGETS = 18
+const PERFORMANCE_FALLBACK_TEXT_REVEAL_MAX_ANIMATED_NODES = 54
+const PERFORMANCE_FALLBACK_TEXT_REVEAL_OFFSET_Y = 4
 const TEXT_REVEAL_LINE_TOP_TOLERANCE_PX = 3
 const TEXT_REVEAL_START_DELAY_S = 0.02
 
@@ -290,12 +290,10 @@ function PageTransition({
       return {
         blurPx: shouldUseReducedFallback ? 0 : TEXT_REVEAL_BLUR_PX,
         maxAnimatedNodes: isPerformanceFallback
-          ? WINDOWS_CHROMIUM_TEXT_REVEAL_MAX_ANIMATED_NODES
+          ? PERFORMANCE_FALLBACK_TEXT_REVEAL_MAX_ANIMATED_NODES
           : TEXT_REVEAL_MAX_ANIMATED_NODES,
-        maxTargets: isPerformanceFallback
-          ? WINDOWS_CHROMIUM_TEXT_REVEAL_MAX_TARGETS
-          : TEXT_REVEAL_MAX_TARGETS,
-        offsetY: shouldUseReducedFallback ? WINDOWS_CHROMIUM_TEXT_REVEAL_OFFSET_Y : TEXT_REVEAL_OFFSET_Y,
+        maxTargets: isPerformanceFallback ? PERFORMANCE_FALLBACK_TEXT_REVEAL_MAX_TARGETS : TEXT_REVEAL_MAX_TARGETS,
+        offsetY: shouldUseReducedFallback ? PERFORMANCE_FALLBACK_TEXT_REVEAL_OFFSET_Y : TEXT_REVEAL_OFFSET_Y,
         splitIntoLines: !isPerformanceFallback,
       }
     },
@@ -430,7 +428,7 @@ function PageTransition({
       window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const revealOptions = getTextRevealOptions(prefersReducedMotion)
-    const useForce3D = !isPerformanceFallback
+    const useForce3D = false
 
     const duration = prefersReducedMotion
       ? REDUCED_MOTION_INCOMING_DURATION_S

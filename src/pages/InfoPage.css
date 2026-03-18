@@ -83,15 +83,6 @@
   margin: 0 auto;
   --river-progress: 0;
   --river-reveal-cutoff-px: 0px;
-}
-
-.info-river-track__svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
@@ -115,7 +106,16 @@
   will-change: -webkit-mask-image, mask-image;
 }
 
-.info-river-track.info-river-track--clip-fallback .info-river-track__svg {
+.info-river-track__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.info-river-track.info-river-track--clip-fallback {
   -webkit-mask-image: none;
   mask-image: none;
   -webkit-clip-path: inset(0 0 calc((1 - var(--river-progress)) * 100%) 0);

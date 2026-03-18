@@ -26,8 +26,6 @@
 
 .page-transition__outgoing-layer {
   z-index: 55;
-  perspective: 1200px;
-  transform-style: preserve-3d;
 }
 
 .page-transition__incoming-layer {
@@ -39,8 +37,7 @@
   inset: 0;
   transform-origin: center center;
   will-change: transform;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
+  backface-visibility: visible;
 }
 
 .page-transition__incoming-motion {
@@ -48,24 +45,23 @@
   width: 100%;
   min-height: 100svh;
   background: var(--color-white);
-  transform: translate3d(0, 0, 0);
+  transform: translate(0, 0);
   transition: none !important;
   will-change: transform, opacity;
-  backface-visibility: hidden;
+  backface-visibility: visible;
 }
 
 .page-transition__outgoing-scroll {
   min-height: 100svh;
   will-change: transform;
-  backface-visibility: hidden;
+  backface-visibility: visible;
 }
 
 .page-transition__outgoing-content {
   position: relative;
   transform-origin: center center;
   will-change: transform, opacity;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
+  backface-visibility: visible;
 }
 
 .page-transition__outgoing-snapshot {
@@ -92,7 +88,7 @@
   min-height: 100svh;
   opacity: var(--incoming-content-opacity, 1);
   transition: none !important;
-  backface-visibility: hidden;
+  backface-visibility: visible;
 }
 
 .page-transition__outgoing-layer .project-scroll-minimap {
@@ -127,17 +123,4 @@
 .page-transition__reveal-token {
   display: inline-block;
   white-space: pre;
-}
-
-.page-transition.is-performance-fallback .page-transition__outgoing-layer {
-  perspective: none;
-  transform-style: flat;
-}
-
-.page-transition.is-performance-fallback .page-transition__outgoing-motion,
-.page-transition.is-performance-fallback .page-transition__outgoing-content,
-.page-transition.is-performance-fallback .page-transition__incoming-motion,
-.page-transition.is-performance-fallback .page-transition__incoming-content {
-  transform-style: flat;
-  backface-visibility: visible;
 }

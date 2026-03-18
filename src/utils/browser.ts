@@ -56,5 +56,5 @@ export function isSafariBrowser() {
 }
 
 export function shouldUsePageTransitionPerformanceFallback() {
-  return isWindowsChromiumBrowser() || isSafariBrowser()
+  return isSafariBrowser()
 }
