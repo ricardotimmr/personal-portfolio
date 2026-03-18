@@ -1,5 +1,10 @@
 import ResponsiveImage from '../../common/ResponsiveImage'
-import type { ProjectNarrativeContent, ResponsiveProjectImage } from '../../../data/projects'
+import {
+  getLocalizedProjectText,
+  type ProjectNarrativeContent,
+  type ResponsiveProjectImage,
+} from '../../../data/projects'
+import { useSiteLanguage } from '../../../context/LanguageContext'
 
 type ProjectDetailNarrativeProps = {
   narrative: ProjectNarrativeContent
@@ -12,12 +17,18 @@ type ProjectDetailNarrativeProps = {
 }
 
 function ProjectDetailNarrative({ narrative, detailImages }: ProjectDetailNarrativeProps) {
+  const { language } = useSiteLanguage()
+
   return (
     <>
       <div className="project-detail-overview project-detail-overview--right">
-        <p className="project-detail-overview__label">[OVERVIEW]</p>
-        <p className="project-detail-overview__headline">{narrative.overviewHeadline}</p>
-        <p className="project-detail-overview__meta">{narrative.overviewMeta}</p>
+        <p className="project-detail-overview__label">{language === 'de' ? '[UEBERBLICK]' : '[OVERVIEW]'}</p>
+        <p className="project-detail-overview__headline">
+          {getLocalizedProjectText(narrative.overviewHeadline, language)}
+        </p>
+        <p className="project-detail-overview__meta">
+          {getLocalizedProjectText(narrative.overviewMeta, language)}
+        </p>
       </div>
 
       <div className="project-detail-visual-stack" aria-hidden="true">
@@ -30,9 +41,13 @@ function ProjectDetailNarrative({ narrative, detailImages }: ProjectDetailNarrat
       </div>
 
       <div className="project-detail-overview project-detail-overview--left">
-        <p className="project-detail-overview__label">[PROCESS]</p>
-        <p className="project-detail-overview__headline">{narrative.processHeadline}</p>
-        <p className="project-detail-overview__meta">{narrative.processMeta}</p>
+        <p className="project-detail-overview__label">{language === 'de' ? '[PROZESS]' : '[PROCESS]'}</p>
+        <p className="project-detail-overview__headline">
+          {getLocalizedProjectText(narrative.processHeadline, language)}
+        </p>
+        <p className="project-detail-overview__meta">
+          {getLocalizedProjectText(narrative.processMeta, language)}
+        </p>
       </div>
 
       <div className="project-detail-visual-stack" aria-hidden="true">

@@ -2,19 +2,29 @@
   {
     "id": "project-13",
     "slug": "shrinkify-entwicklungsprojekt",
-    "title": "Shrinkify Entwicklungsprojekt",
+    "title": "Shrinkify Development Project",
+    "titleDe": "Shrinkify Entwicklungsprojekt",
     "orientation": "landscape",
     "description": "Web-based file compression tool designed for seamless CMS integration. Shrinkify enables structured uploads, automated optimization and role-based workflows for content managers and asset owners, focusing on usability, security and scalable processing of large media files.",
+    "descriptionDe": "Webbasiertes Dateikomprimierungstool fuer nahtlose CMS-Integration. Shrinkify ermoeglicht strukturierte Uploads, automatisierte Optimierung und rollenbasierte Workflows fuer Content-Manager und Asset-Verantwortliche mit Fokus auf Usability, Sicherheit und skalierbare Verarbeitung grosser Mediendateien.",
     "roles": [
       "Frontend Developer",
       "UX/UI Designer"
     ],
+    "rolesDe": [
+      "Frontend-Entwickler",
+      "UX/UI-Designer"
+    ],
     "visitUrl": "https://github.com/ricardotimmr/entwicklungsprojekt-shrinkify",
     "detail": {
       "overviewHeadline": "A modular web application for automated file compression in CMS-driven environments.",
+      "overviewHeadlineDe": "Eine modulare Webanwendung zur automatisierten Dateikomprimierung in CMS-basierten Umgebungen.",
       "overviewMeta": "Shrinkify streamlines large media handling through intuitive upload flows, structured processing and clear role separation between asset owners and content managers.",
+      "overviewMetaDe": "Shrinkify vereinfacht den Umgang mit grossen Mediendateien durch intuitive Upload-Flows, strukturierte Verarbeitung und klare Rollentrennung zwischen Asset-Ownern und Content-Managern.",
       "processHeadline": "The system architecture balances usability, security and technical constraints.",
-      "processMeta": "Frontend, backend and conversion logic were structured around defined ADRs to ensure maintainability, scalability and future integration into existing CMS workflows."
+      "processHeadlineDe": "Die Systemarchitektur balanciert Usability, Sicherheit und technische Rahmenbedingungen.",
+      "processMeta": "Frontend, backend and conversion logic were structured around defined ADRs to ensure maintainability, scalability and future integration into existing CMS workflows.",
+      "processMetaDe": "Frontend-, Backend- und Konvertierungslogik wurden entlang definierter ADRs strukturiert, um Wartbarkeit, Skalierbarkeit und eine spaetere Integration in bestehende CMS-Workflows sicherzustellen."
     },
     "assets": {
       "folder": "shrinkify-entwicklungsprojekt",
@@ -30,19 +40,29 @@
   {
     "id": "project-14",
     "slug": "varia-praxisprojekt",
-    "title": "Varia Praxisprojekt",
+    "title": "Varia Practical Project",
+    "titleDe": "Varia Praxisprojekt",
     "orientation": "portrait",
     "description": "Interactive web tool for building modular product presentation components such as feature sliders, 360° viewers and hotspot graphics. Designed for agencies and brands to create CI-consistent, reusable product modules with live preview and structured export logic.",
+    "descriptionDe": "Interaktives Webtool zur Erstellung modularer Produktpraesentationsbausteine wie Feature-Slider, 360-Grad-Viewer und Hotspot-Grafiken. Entwickelt fuer Agenturen und Marken, um CI-konforme, wiederverwendbare Produktmodule mit Live-Preview und strukturierter Exportlogik zu bauen.",
     "roles": [
       "Frontend Developer",
       "UX/UI Designer"
     ],
+    "rolesDe": [
+      "Frontend-Entwickler",
+      "UX/UI-Designer"
+    ],
     "visitUrl": "https://github.com/ricardotimmr/praxisprojekt-2025-varia",
     "detail": {
       "overviewHeadline": "A modular web application for interactive product presentation systems.",
+      "overviewHeadlineDe": "Eine modulare Webanwendung fuer interaktive Produktpraesentationssysteme.",
       "overviewMeta": "Varia enables the creation of reusable, CI-compliant product modules that enhance digital storytelling and conversion on marketing websites.",
+      "overviewMetaDe": "Varia ermoeglicht die Erstellung wiederverwendbarer, CI-konformer Produktmodule, die digitales Storytelling und Conversion auf Marketing-Websites verbessern.",
       "processHeadline": "The project combined UX research, component architecture and technical validation.",
-      "processMeta": "Low-fidelity prototyping, defined user flows and Proof-of-Concept modules ensured feasibility while a scalable frontend architecture prepared the system for future expansion."
+      "processHeadlineDe": "Das Projekt kombinierte UX-Research, Komponentenarchitektur und technische Validierung.",
+      "processMeta": "Low-fidelity prototyping, defined user flows and Proof-of-Concept modules ensured feasibility while a scalable frontend architecture prepared the system for future expansion.",
+      "processMetaDe": "Low-Fidelity-Prototyping, definierte User-Flows und Proof-of-Concept-Module sicherten die Umsetzbarkeit, waehrend eine skalierbare Frontend-Architektur das System auf kuenftige Erweiterungen vorbereitete."
     },
     "assets": {
       "folder": "varia-praxisprojekt",

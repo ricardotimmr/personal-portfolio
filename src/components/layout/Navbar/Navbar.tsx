@@ -1,14 +1,59 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import { useSiteLanguage } from '../../../context/LanguageContext'
 import type { Theme } from '../../../hooks/useTheme'
 import './Navbar.css'
 
 const navItems = [
-  { label: 'HOME', to: '/' },
-  { label: 'WORK', to: '/work' },
-  { label: 'FREETIME', to: '/freetime', isComingSoon: true },
-  { label: 'INFO', to: '/info' },
+  {
+    to: '/',
+    label: { en: 'HOME', de: 'HOME' },
+  },
+  {
+    to: '/work',
+    label: { en: 'WORK', de: 'WORK' },
+  },
+  {
+    to: '/freetime',
+    label: { en: 'FREETIME', de: 'FREIZEIT' },
+    isComingSoon: true,
+  },
+  {
+    to: '/info',
+    label: { en: 'INFO', de: 'INFO' },
+  },
 ]
+
+const navbarText = {
+  en: {
+    closeNavigationMenu: 'Close navigation menu',
+    openNavigationMenu: 'Open navigation menu',
+    primaryNavigation: 'Primary',
+    comingSoon: 'COMING SOON!',
+    switchToDark: 'Switch to dark mode',
+    switchToLight: 'Switch to light mode',
+    openIntroduction: 'Open introduction',
+    languageToggleAria: 'Site language',
+    aboutDialogLabel: 'About Ricardo Timm',
+    aboutTitle: 'PASSIONATE DESIGNER AND DEVELOPER',
+    aboutBody:
+      'Ricardo Timm is a designer and front-end developer focused on clean, intentional digital experiences. His work blends precise UI craft with motion and interaction that feel calm, structured, and human. With a detail-driven mindset shaped by endurance sports, he builds products that are consistent, refined, and built to last. This portfolio was designed and developed by Ricardo Timm.',
+  },
+  de: {
+    closeNavigationMenu: 'Navigationsmenue schliessen',
+    openNavigationMenu: 'Navigationsmenue oeffnen',
+    primaryNavigation: 'Hauptnavigation',
+    comingSoon: 'BALD VERFUEGBAR!',
+    switchToDark: 'Zum dunklen Modus wechseln',
+    switchToLight: 'Zum hellen Modus wechseln',
+    openIntroduction: 'Einleitung oeffnen',
+    languageToggleAria: 'Seitensprache',
+    aboutDialogLabel: 'Ueber Ricardo Timm',
+    aboutTitle: 'LEIDENSCHAFTLICHER DESIGNER UND ENTWICKLER',
+    aboutBody:
+      'Ricardo Timm ist Designer und Frontend-Entwickler mit Fokus auf klare, bewusst gestaltete digitale Erlebnisse. Seine Arbeit verbindet praezises UI-Handwerk mit Motion und Interaktion, die ruhig, strukturiert und menschlich wirken. Mit einem detailorientierten Mindset, gepraegt durch Ausdauersport, entwickelt er Produkte, die konsistent, hochwertig und nachhaltig sind. Dieses Portfolio wurde von Ricardo Timm gestaltet und entwickelt.',
+  },
+} as const
 
 type NavbarProps = {
   theme: Theme
@@ -16,6 +61,7 @@ type NavbarProps = {
 }
 
 function Navbar({ theme, onToggleTheme }: NavbarProps) {
+  const { language, setLanguage } = useSiteLanguage()
   const [isHidden, setIsHidden] = useState(false)
   const [isYearOverlayOpen, setIsYearOverlayOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -26,6 +72,7 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
   const menuRef = useRef<HTMLElement | null>(null)
   const themeToggleRef = useRef<HTMLButtonElement | null>(null)
   const location = useLocation()
+  const text = navbarText[language]
 
   useEffect(() => {
     previousScrollYRef.current = window.scrollY
@@ -187,7 +234,7 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
           <button
             type="button"
             className={`site-navbar__burger ${isMobileMenuOpen ? 'is-open' : ''}`}
-            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-label={isMobileMenuOpen ? text.closeNavigationMenu : text.openNavigationMenu}
             aria-expanded={isMobileMenuOpen}
             aria-controls="site-navbar-menu"
             onClick={() => setIsMobileMenuOpen((current) => !current)}
@@ -199,7 +246,7 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
           <nav
             id="site-navbar-menu"
             className={`site-navbar__menu ${isMobileMenuOpen ? 'is-open' : ''}`}
-            aria-label="Primary"
+            aria-label={text.primaryNavigation}
             ref={menuRef}
           >
             <span
@@ -235,13 +282,13 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
               >
                 {item.isComingSoon ? (
                   <span className="nav-menu-link__coming-soon" aria-hidden="true">
-                    COMING SOON!
+                    {text.comingSoon}
                   </span>
                 ) : null}
                 <span className="nav-menu-link__label nav-text-swap">
-                  <span className="nav-text-swap__primary">{item.label}</span>
+                  <span className="nav-text-swap__primary">{item.label[language]}</span>
                   <span className="nav-text-swap__secondary" aria-hidden="true">
-                    {item.label}
+                    {item.label[language]}
                   </span>
                 </span>
               </NavLink>
@@ -249,13 +296,32 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
           </nav>
 
           <div className="site-navbar__actions">
+            <div className="site-navbar__language-switch" role="group" aria-label={text.languageToggleAria}>
+              <button
+                type="button"
+                className={`site-navbar__language-button ${language === 'en' ? 'is-active' : ''}`}
+                onClick={() => setLanguage('en')}
+                aria-pressed={language === 'en'}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                className={`site-navbar__language-button ${language === 'de' ? 'is-active' : ''}`}
+                onClick={() => setLanguage('de')}
+                aria-pressed={language === 'de'}
+              >
+                DE
+              </button>
+            </div>
+
             <button
               type="button"
               className={`site-navbar__theme-toggle ${theme === 'light' && isBlinking ? 'is-blinking' : ''}`}
               onClick={onToggleTheme}
               ref={themeToggleRef}
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              aria-label={theme === 'light' ? text.switchToDark : text.switchToLight}
+              title={theme === 'light' ? text.switchToDark : text.switchToLight}
             >
               <span className="site-navbar__theme-eyes" aria-hidden="true">
                 <span className="site-navbar__theme-eye">
@@ -271,7 +337,7 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
               type="button"
               className="site-navbar__year nav-text-swap"
               onClick={() => setIsYearOverlayOpen(true)}
-              aria-label="Open introduction"
+              aria-label={text.openIntroduction}
             >
               <span className="nav-text-swap__primary">[2026]</span>
               <span className="nav-text-swap__secondary" aria-hidden="true">
@@ -291,17 +357,11 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
           className="site-year-overlay__panel"
           role="dialog"
           aria-modal="true"
-          aria-label="About Ricardo Timm"
+          aria-label={text.aboutDialogLabel}
           onClick={(event) => event.stopPropagation()}
         >
-          <h2 className="site-year-overlay__title">PASSIONATE DESIGNER AND DEVELOPER</h2>
-          <p className="site-year-overlay__text">
-            Ricardo Timm is a designer and front-end developer focused on clean, intentional
-            digital experiences. His work blends precise UI craft with motion and interaction that
-            feel calm, structured, and human. With a detail-driven mindset shaped by endurance
-            sports, he builds products that are consistent, refined, and built to last. This
-            portfolio was designed and developed by Ricardo Timm.
-          </p>
+          <h2 className="site-year-overlay__title">{text.aboutTitle}</h2>
+          <p className="site-year-overlay__text">{text.aboutBody}</p>
         </section>
       </div>
     </>

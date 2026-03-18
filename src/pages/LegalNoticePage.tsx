@@ -1,39 +1,18 @@
-import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useSiteLanguage } from '../context/LanguageContext'
 import './LegalPages.css'
 
-type LegalNoticeLocale = 'en' | 'de'
-
 function LegalNoticePage() {
-  const [locale, setLocale] = useState<LegalNoticeLocale>('de')
-  const isEnglish = locale === 'en'
+  const { language } = useSiteLanguage()
+  const isEnglish = language === 'en'
 
   return (
     <main className="legal-page">
       <div className="legal-page__content">
-        <div className="legal-page__lang-toggle" role="group" aria-label="Language selection">
-          <button
-            type="button"
-            className={`legal-page__lang-button ${!isEnglish ? 'is-active' : ''}`}
-            onClick={() => setLocale('de')}
-            aria-pressed={!isEnglish}
-          >
-            DE
-          </button>
-          <button
-            type="button"
-            className={`legal-page__lang-button ${isEnglish ? 'is-active' : ''}`}
-            onClick={() => setLocale('en')}
-            aria-pressed={isEnglish}
-          >
-            EN
-          </button>
-        </div>
-
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={locale}
+            key={language}
             className="legal-page__locale-content"
             role="region"
             aria-live="polite"

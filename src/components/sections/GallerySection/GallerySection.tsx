@@ -13,6 +13,7 @@ import {
   GALLERY_SCROLL_WHEEL_DRAG_FACTOR,
 } from '../../navigation/SmoothScroll/scrollPhysics'
 import { normalizeWheelDeltaToPixels } from '../../navigation/SmoothScroll/normalizeWheelDelta'
+import { useSiteLanguage } from '../../../context/LanguageContext'
 import { type ResponsiveProjectImage, PROJECTS } from '../../../data/projects'
 import ResponsiveImage from '../../common/ResponsiveImage'
 import './GallerySection.css'
@@ -51,6 +52,19 @@ let persistedGalleryTrackX: number | null = null
 
 type MarkerPhase = 'idle' | 'open' | 'closing'
 
+const galleryText = {
+  en: {
+    title: '[THE GALLERY]',
+    openProject: 'OPEN PROJECT',
+    dragHint: 'DRAG/CLICK/SCROLL TO NAVIGATE',
+  },
+  de: {
+    title: '[DIE GALERIE]',
+    openProject: 'PROJEKT OEFFNEN',
+    dragHint: 'ZIEHEN/KLICKEN/SCROLLEN ZUR NAVIGATION',
+  },
+} as const
+
 function buildSlides(): GallerySlide[] {
   return PROJECTS.map((project) => ({
     id: project.id,
@@ -61,6 +75,7 @@ function buildSlides(): GallerySlide[] {
 }
 
 function GallerySection() {
+  const { language } = useSiteLanguage()
   const navigate = useNavigate()
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const trackRef = useRef<HTMLDivElement | null>(null)
@@ -94,6 +109,7 @@ function GallerySection() {
   const [isDragging, setIsDragging] = useState(false)
 
   const gallerySlides = useMemo(() => buildSlides(), [])
+  const text = galleryText[language]
   const uniqueImageSources = useMemo(
     () => Array.from(new Set(gallerySlides.map((slide) => slide.image.src))),
     [gallerySlides],
@@ -621,7 +637,7 @@ function GallerySection() {
 
   return (
     <section className="index-section section--gallery">
-      <p className="gallery-title">[THE GALLERY]</p>
+      <p className="gallery-title">{text.title}</p>
 
       <div
         className={`gallery-slider-viewport ${isCenterHovering ? 'is-active-card' : ''} ${
@@ -671,13 +687,13 @@ function GallerySection() {
           <span className="gallery-center-action__inner" />
         </span>
         <span className="gallery-center-action__text-wrap">
-          <span className="gallery-center-action__text">OPEN PROJECT</span>
+          <span className="gallery-center-action__text">{text.openProject}</span>
         </span>
       </div>
 
       <p className={`gallery-drag-hint ${isDragging ? 'is-hidden' : ''}`} aria-hidden="true">
         <span className="gallery-drag-hint__chevron">‹</span>
-        <span className="gallery-drag-hint__text">DRAG/CLICK/SCROLL TO NAVIGATE</span>
+        <span className="gallery-drag-hint__text">{text.dragHint}</span>
         <span className="gallery-drag-hint__chevron">›</span>
       </p>
 

@@ -1,39 +1,18 @@
-import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useSiteLanguage } from '../context/LanguageContext'
 import './LegalPages.css'
 
-type PrivacyLocale = 'de' | 'en'
-
 function PrivacyPolicyPage() {
-  const [locale, setLocale] = useState<PrivacyLocale>('de')
-  const isGerman = locale === 'de'
+  const { language } = useSiteLanguage()
+  const isGerman = language === 'de'
 
   return (
     <main className="legal-page">
       <div className="legal-page__content">
-        <div className="legal-page__lang-toggle" role="group" aria-label="Sprachauswahl">
-          <button
-            type="button"
-            className={`legal-page__lang-button ${isGerman ? 'is-active' : ''}`}
-            onClick={() => setLocale('de')}
-            aria-pressed={isGerman}
-          >
-            DE
-          </button>
-          <button
-            type="button"
-            className={`legal-page__lang-button ${!isGerman ? 'is-active' : ''}`}
-            onClick={() => setLocale('en')}
-            aria-pressed={!isGerman}
-          >
-            EN
-          </button>
-        </div>
-
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={locale}
+            key={language}
             className="legal-page__locale-content"
             role="region"
             aria-live="polite"
@@ -206,7 +185,7 @@ function PrivacyPolicyPage() {
                     <br />
                     Hauptstraße 15
                     <br />
-                    51674 Wiel
+                    51674 Wiehl
                     <br />
                     Germany
                     <br />

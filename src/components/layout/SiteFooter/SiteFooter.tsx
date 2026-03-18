@@ -1,10 +1,42 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowRight, ArrowUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useSiteLanguage } from '../../../context/LanguageContext'
 import './SiteFooter.css'
 
+const footerText = {
+  en: {
+    ctaWords: ['ReADy', 'wHeN', 'yOu', 'Are'],
+    legalAria: 'Legal',
+    privacy: 'Privacy Policy',
+    legalNotice: 'Legal Notice',
+    scrollToTop: 'Scroll to top',
+    contactDialogLabel: 'Contact Ricardo Timm',
+    contactTitle: 'GET IN TOUCH',
+    name: 'NAME',
+    email: 'EMAIL',
+    message: 'MESSAGE',
+    sendMessage: 'SEND MESSAGE',
+  },
+  de: {
+    ctaWords: ['BeREit', 'wEnN', 'Du', 'BiSt'],
+    legalAria: 'Rechtliches',
+    privacy: 'Datenschutz',
+    legalNotice: 'Impressum',
+    scrollToTop: 'Nach oben scrollen',
+    contactDialogLabel: 'Ricardo Timm kontaktieren',
+    contactTitle: 'KONTAKT',
+    name: 'NAME',
+    email: 'E-MAIL',
+    message: 'NACHRICHT',
+    sendMessage: 'NACHRICHT SENDEN',
+  },
+} as const
+
 function SiteFooter() {
+  const { language } = useSiteLanguage()
   const [isContactOverlayOpen, setIsContactOverlayOpen] = useState(false)
+  const text = footerText[language]
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -40,10 +72,9 @@ function SiteFooter() {
       <footer className="footer-section section--footer">
         <div className="footer-panel">
           <button type="button" className="footer-cta-link" onClick={() => setIsContactOverlayOpen(true)}>
-            <span>ReADy</span>
-            <span>wHeN</span>
-            <span>yOu</span>
-            <span>Are</span>
+            {text.ctaWords.map((word) => (
+              <span key={word}>{word}</span>
+            ))}
           </button>
 
           <p className="footer-meta footer-meta--left">[RICARDO TIMM]</p>
@@ -79,15 +110,15 @@ function SiteFooter() {
             <ArrowRight className="footer-link__icon" size={32} />
           </a>
 
-          <nav className="footer-legal" aria-label="Legal">
+          <nav className="footer-legal" aria-label={text.legalAria}>
             <Link className="footer-legal__link" to="/privacy-policy">
-              Datenschutz
+              {text.privacy}
             </Link>
             <span className="footer-legal__divider" aria-hidden="true">
               ·
             </span>
             <Link className="footer-legal__link" to="/legal-notice">
-              Impressum
+              {text.legalNotice}
             </Link>
           </nav>
 
@@ -95,7 +126,7 @@ function SiteFooter() {
             className="footer-scroll-top"
             type="button"
             onClick={handleScrollToTop}
-            aria-label="Scroll to top"
+            aria-label={text.scrollToTop}
           >
             <ArrowUp size={32} />
           </button>
@@ -111,13 +142,13 @@ function SiteFooter() {
           className="footer-contact-overlay__panel"
           role="dialog"
           aria-modal="true"
-          aria-label="Contact Ricardo Timm"
+          aria-label={text.contactDialogLabel}
           onClick={(event) => event.stopPropagation()}
         >
-          <h2 className="footer-contact-overlay__title">GET IN TOUCH</h2>
+          <h2 className="footer-contact-overlay__title">{text.contactTitle}</h2>
           <form className="footer-contact-form" onSubmit={handleContactSubmit}>
             <label className="footer-contact-form__label" htmlFor="footer-contact-name">
-              NAME
+              {text.name}
             </label>
             <input
               id="footer-contact-name"
@@ -129,7 +160,7 @@ function SiteFooter() {
             />
 
             <label className="footer-contact-form__label" htmlFor="footer-contact-email">
-              EMAIL
+              {text.email}
             </label>
             <input
               id="footer-contact-email"
@@ -141,7 +172,7 @@ function SiteFooter() {
             />
 
             <label className="footer-contact-form__label" htmlFor="footer-contact-message">
-              MESSAGE
+              {text.message}
             </label>
             <textarea
               id="footer-contact-message"
@@ -152,7 +183,7 @@ function SiteFooter() {
 
             <div className="footer-contact-form__actions">
               <button type="submit" className="footer-contact-form__button">
-                SEND MESSAGE
+                {text.sendMessage}
               </button>
             </div>
           </form>

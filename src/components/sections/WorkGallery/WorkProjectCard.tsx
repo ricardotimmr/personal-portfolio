@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import type { MouseEventHandler } from 'react'
 import ResponsiveImage from '../../common/ResponsiveImage'
-import { type ProjectRecord } from '../../../data/projects'
+import { useSiteLanguage } from '../../../context/LanguageContext'
+import { getLocalizedProjectText, type ProjectRecord } from '../../../data/projects'
 
 type WorkProjectCardProps = {
   project: ProjectRecord
@@ -10,12 +11,15 @@ type WorkProjectCardProps = {
 }
 
 function WorkProjectCard({ project, onImageLoad, onProjectClick }: WorkProjectCardProps) {
+  const { language } = useSiteLanguage()
+  const projectTitle = getLocalizedProjectText(project.title, language)
+
   return (
     <article className="work-project">
       <Link
         className="work-project__media"
         to={`/work/${project.slug}`}
-        aria-label={`Open ${project.title}`}
+        aria-label={language === 'de' ? `${projectTitle} oeffnen` : `Open ${projectTitle}`}
         onClick={onProjectClick}
       >
         <ResponsiveImage
@@ -30,7 +34,9 @@ function WorkProjectCard({ project, onImageLoad, onProjectClick }: WorkProjectCa
             <span className="work-project-action__inner" />
           </span>
           <span className="work-project-action__text-wrap">
-            <span className="work-project-action__text">OPEN PROJECT</span>
+            <span className="work-project-action__text">
+              {language === 'de' ? 'PROJEKT OEFFNEN' : 'OPEN PROJECT'}
+            </span>
           </span>
         </div>
       </Link>

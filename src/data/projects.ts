@@ -1,6 +1,12 @@
 import projectContent from '../content/projects/projects.json'
+import { type SiteLanguage } from '../i18n/language'
 
 export type ProjectOrientation = 'landscape' | 'portrait'
+
+export type LocalizedValue<T> = Record<SiteLanguage, T>
+
+export type LocalizedText = LocalizedValue<string>
+export type LocalizedStringList = LocalizedValue<string[]>
 
 export type ResponsiveProjectImage = {
   alt: string
@@ -12,19 +18,19 @@ export type ResponsiveProjectImage = {
 }
 
 export type ProjectNarrativeContent = {
-  overviewHeadline: string
-  overviewMeta: string
-  processHeadline: string
-  processMeta: string
+  overviewHeadline: LocalizedText
+  overviewMeta: LocalizedText
+  processHeadline: LocalizedText
+  processMeta: LocalizedText
 }
 
 export type ProjectRecord = {
   id: string
   slug: string
-  title: string
+  title: LocalizedText
   orientation: ProjectOrientation
-  description: string
-  roles: string[]
+  description: LocalizedText
+  roles: LocalizedStringList
   visitUrl?: string
   imageSrc: string
   thumbnailImage: ResponsiveProjectImage
@@ -37,11 +43,23 @@ type ProjectContentRecord = {
   id: string
   slug: string
   title: string
+  titleDe?: string
   orientation: ProjectOrientation
   description: string
+  descriptionDe?: string
   roles: string[]
+  rolesDe?: string[]
   visitUrl?: string
-  detail: ProjectNarrativeContent
+  detail: {
+    overviewHeadline: string
+    overviewHeadlineDe?: string
+    overviewMeta: string
+    overviewMetaDe?: string
+    processHeadline: string
+    processHeadlineDe?: string
+    processMeta: string
+    processMetaDe?: string
+  }
   assets: {
     folder: string
     fallbackThumbnail: string
@@ -216,6 +234,24 @@ function normalizeVisitUrl(value: string | undefined) {
   return trimmed ? trimmed : undefined
 }
 
+function toLocalizedText(english: string, german?: string): LocalizedText {
+  const englishValue = english.trim()
+  const germanValue = german?.trim()
+  return {
+    en: englishValue,
+    de: germanValue || englishValue,
+  }
+}
+
+function toLocalizedStringList(english: string[], german?: string[]): LocalizedStringList {
+  const englishValues = english.map((value) => value.trim()).filter(Boolean)
+  const germanValues = german?.map((value) => value.trim()).filter(Boolean)
+  return {
+    en: englishValues,
+    de: germanValues && germanValues.length > 0 ? germanValues : englishValues,
+  }
+}
+
 function isProjectRecord(value: unknown): value is ProjectContentRecord {
   if (!value || typeof value !== 'object') {
     return false
@@ -277,7 +313,7 @@ function buildProjects() {
         'detail-03',
         project.assets.fallbackDetails[2],
         detailSizes,
-        `${project.title} detail visual 3`,
+        `${project.title} detail image 3`,
       ),
       resolveProjectImage(
         project.assets.folder,
@@ -296,20 +332,26 @@ function buildProjects() {
     return {
       id: project.id,
       slug: project.slug,
-      title: project.title,
+      title: toLocalizedText(project.title, project.titleDe),
       orientation: project.orientation,
-      description: project.description,
-      roles: [...project.roles],
+      description: toLocalizedText(project.description, project.descriptionDe),
+      roles: toLocalizedStringList(project.roles, project.rolesDe),
       visitUrl: normalizeVisitUrl(project.visitUrl),
       imageSrc: thumbnailImage.src,
       thumbnailImage,
       heroImage,
       detailImages,
       narrative: {
-        overviewHeadline: project.detail.overviewHeadline,
-        overviewMeta: project.detail.overviewMeta,
-        processHeadline: project.detail.processHeadline,
-        processMeta: project.detail.processMeta,
+        overviewHeadline: toLocalizedText(
+          project.detail.overviewHeadline,
+          project.detail.overviewHeadlineDe,
+        ),
+        overviewMeta: toLocalizedText(project.detail.overviewMeta, project.detail.overviewMetaDe),
+        processHeadline: toLocalizedText(
+          project.detail.processHeadline,
+          project.detail.processHeadlineDe,
+        ),
+        processMeta: toLocalizedText(project.detail.processMeta, project.detail.processMetaDe),
       },
     }
   })
@@ -319,4 +361,12 @@ export const PROJECTS: ProjectRecord[] = buildProjects()
 
 export function getProjectBySlug(slug: string) {
   return PROJECTS.find((project) => project.slug === slug) ?? null
+}
+
+export function getLocalizedProjectText(value: LocalizedText, language: SiteLanguage) {
+  return value[language] ?? value.en
+}
+
+export function getLocalizedProjectStringList(value: LocalizedStringList, language: SiteLanguage) {
+  return value[language] ?? value.en
 }

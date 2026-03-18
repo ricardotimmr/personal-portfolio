@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 
 const INTRO_SESSION_STORAGE_KEY = 'portfolio:intro-played'
 const THEME_STORAGE_KEY = 'rt-site-theme'
+const LANGUAGE_STORAGE_KEY = 'rt-site-language'
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript((introStorageKey) => {
@@ -107,6 +108,27 @@ test('theme toggle updates document theme and persists across reload', async ({ 
 
   await page.reload()
   await expect.poll(async () => page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark')
+})
+
+test('site language toggle updates UI and persists across reload', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate((key) => {
+    window.localStorage.removeItem(key)
+  }, LANGUAGE_STORAGE_KEY)
+  await page.reload()
+
+  await expect.poll(async () => page.evaluate(() => document.documentElement.lang)).toBe('en')
+  await expect(page.getByRole('link', { name: 'FREETIME' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'DE' }).click()
+  await expect.poll(async () => page.evaluate(() => document.documentElement.lang)).toBe('de')
+  await expect(page.getByRole('link', { name: 'FREIZEIT' })).toBeVisible()
+
+  await page.goto('/privacy-policy')
+  await expect(page.getByRole('heading', { level: 1, name: 'Datenschutzerklärung' })).toBeVisible()
+
+  await page.reload()
+  await expect.poll(async () => page.evaluate(() => document.documentElement.lang)).toBe('de')
 })
 
 test('navigation hover state animates text swap on desktop browsers', async ({ page }) => {

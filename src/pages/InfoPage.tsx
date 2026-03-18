@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
+import { useSiteLanguage } from '../context/LanguageContext'
 import SiteFooter from '../components/layout/SiteFooter/SiteFooter'
 import { clamp01, computeRiverRevealProgress, isRiverStationVisible } from './infoRiverReveal'
 import './InfoPage.css'
@@ -11,94 +12,204 @@ type RiverStation = {
   offset: number
 }
 
-const RIVER_STATIONS: RiverStation[] = [
-  {
-    id: 'top-it-recruiting',
-    year: '11/2019',
-    title: 'top itservices AG - Recruiting & Services',
-    detail:
-      'Working student role focused on sourcing, first interviews, candidate profiling and recruiting process support.',
-    offset: -26,
-  },
-  {
-    id: 'top-it-sales',
-    year: '07/2020',
-    title: 'top itservices AG - Sales & Business Development',
-    detail:
-      'Sales support phase with lead research, CRM data maintenance, campaign preparation and customer outreach workflows.',
-    offset: 12,
-  },
-  {
-    id: 'bachelor-start',
-    year: '10/2022',
-    title: 'B.Sc. Medieninformatik (TH Koeln)',
-    detail:
-      'Bachelor studies started with focus on UX/UI design, frontend development and practical product-oriented implementation.',
-    offset: -6,
-  },
-  {
-    id: 'shrinkify',
-    year: '10/2024',
-    title: 'Shrinkify (TH Koeln Entwicklungsprojekt)',
-    detail:
-      'Team project building a CMS-oriented image optimization app with admin/upload flow and modular interface architecture.',
-    offset: 27,
-  },
-  {
-    id: 'varia',
-    year: '04/2025',
-    title: 'Varia Praxisprojekt (TH Koeln)',
-    detail:
-      'Ongoing practical project for interactive, CI-consistent product modules with strong UX/UI and reusable frontend patterns.',
-    offset: -31,
-  },
-  {
-    id: 'ferchau',
-    year: '11/2025',
-    title: 'FERCHAU - Compliance & Legal',
-    detail:
-      'Working student role supporting compliance operations and privacy/data-protection topics across company processes.',
-    offset: 9,
-  },
-  {
-    id: 'uiux-frontend',
-    year: 'Now',
-    title: 'UI/UX + Frontend Development Track',
-    detail:
-      'Building and documenting product-focused interfaces in real projects, with practical coding work visible on GitHub.',
-    offset: -22,
-  },
-]
+const RIVER_STATIONS_BY_LANGUAGE: Record<'en' | 'de', RiverStation[]> = {
+  en: [
+    {
+      id: 'top-it-recruiting',
+      year: '11/2019',
+      title: 'top itservices AG - Recruiting & Services',
+      detail:
+        'Working student role focused on sourcing, first interviews, candidate profiling and recruiting process support.',
+      offset: -26,
+    },
+    {
+      id: 'top-it-sales',
+      year: '07/2020',
+      title: 'top itservices AG - Sales & Business Development',
+      detail:
+        'Sales support phase with lead research, CRM data maintenance, campaign preparation and customer outreach workflows.',
+      offset: 12,
+    },
+    {
+      id: 'bachelor-start',
+      year: '10/2022',
+      title: 'B.Sc. Media Computer Science (TH Koeln)',
+      detail:
+        'Bachelor studies started with focus on UX/UI design, frontend development and practical product-oriented implementation.',
+      offset: -6,
+    },
+    {
+      id: 'shrinkify',
+      year: '10/2024',
+      title: 'Shrinkify (TH Koeln Development Project)',
+      detail:
+        'Team project building a CMS-oriented image optimization app with admin/upload flow and modular interface architecture.',
+      offset: 27,
+    },
+    {
+      id: 'varia',
+      year: '04/2025',
+      title: 'Varia Practical Project (TH Koeln)',
+      detail:
+        'Ongoing practical project for interactive, CI-consistent product modules with strong UX/UI and reusable frontend patterns.',
+      offset: -31,
+    },
+    {
+      id: 'ferchau',
+      year: '11/2025',
+      title: 'FERCHAU - Compliance & Legal',
+      detail:
+        'Working student role supporting compliance operations and privacy/data-protection topics across company processes.',
+      offset: 9,
+    },
+    {
+      id: 'uiux-frontend',
+      year: 'Now',
+      title: 'UI/UX + Frontend Development Track',
+      detail:
+        'Building and documenting product-focused interfaces in real projects, with practical coding work visible on GitHub.',
+      offset: -22,
+    },
+  ],
+  de: [
+    {
+      id: 'top-it-recruiting',
+      year: '11/2019',
+      title: 'top itservices AG - Recruiting & Services',
+      detail:
+        'Werkstudententaetigkeit mit Fokus auf Sourcing, Erstgespraeche, Kandidatenprofile und Recruiting-Prozesssupport.',
+      offset: -26,
+    },
+    {
+      id: 'top-it-sales',
+      year: '07/2020',
+      title: 'top itservices AG - Sales & Business Development',
+      detail:
+        'Sales-Support-Phase mit Lead-Recherche, CRM-Datenpflege, Kampagnenvorbereitung und Customer-Outreach-Workflows.',
+      offset: 12,
+    },
+    {
+      id: 'bachelor-start',
+      year: '10/2022',
+      title: 'B.Sc. Medieninformatik (TH Koeln)',
+      detail:
+        'Start des Bachelorstudiums mit Fokus auf UX/UI-Design, Frontend-Entwicklung und praxisnahe Produktumsetzung.',
+      offset: -6,
+    },
+    {
+      id: 'shrinkify',
+      year: '10/2024',
+      title: 'Shrinkify (TH Koeln Entwicklungsprojekt)',
+      detail:
+        'Teamprojekt zur Entwicklung einer CMS-orientierten Bildoptimierungs-App mit Admin-/Upload-Flow und modularer Interface-Architektur.',
+      offset: 27,
+    },
+    {
+      id: 'varia',
+      year: '04/2025',
+      title: 'Varia Praxisprojekt (TH Koeln)',
+      detail:
+        'Laufendes Praxisprojekt fuer interaktive, CI-konforme Produktmodule mit starkem UX/UI-Fokus und wiederverwendbaren Frontend-Mustern.',
+      offset: -31,
+    },
+    {
+      id: 'ferchau',
+      year: '11/2025',
+      title: 'FERCHAU - Compliance & Legal',
+      detail:
+        'Werkstudententaetigkeit zur Unterstuetzung von Compliance-Prozessen sowie Datenschutz- und Legal-Themen im Unternehmen.',
+      offset: 9,
+    },
+    {
+      id: 'uiux-frontend',
+      year: 'Jetzt',
+      title: 'UI/UX + Frontend Development Track',
+      detail:
+        'Aufbau und Dokumentation produktorientierter Interfaces in realen Projekten mit praktischer Entwicklungsarbeit auf GitHub.',
+      offset: -22,
+    },
+  ],
+}
 
-const SKILL_LANES = [
-  {
-    title: 'Frontend',
-    items: ['React', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Tailwind CSS', 'Vite'],
+const SKILL_LANES_BY_LANGUAGE = {
+  en: [
+    {
+      title: 'Frontend',
+      items: ['React', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Tailwind CSS', 'Vite'],
+    },
+    {
+      title: 'Backend & Processing',
+      items: ['Node.js', 'Sharp', 'REST API', 'Spring'],
+    },
+    {
+      title: 'Languages & Platforms',
+      items: ['Kotlin', 'Java', 'C', 'Postman'],
+    },
+    {
+      title: 'Workflow',
+      items: [
+        'Docker',
+        'Figma',
+        'Git',
+        'GitHub',
+        'Visual Studio Code',
+        'IntelliJ IDEA',
+        'CLion',
+        'ChatGPT',
+        'Claude',
+        'Gemini',
+      ],
+    },
+  ],
+  de: [
+    {
+      title: 'Frontend',
+      items: ['React', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Tailwind CSS', 'Vite'],
+    },
+    {
+      title: 'Backend & Verarbeitung',
+      items: ['Node.js', 'Sharp', 'REST API', 'Spring'],
+    },
+    {
+      title: 'Sprachen & Plattformen',
+      items: ['Kotlin', 'Java', 'C', 'Postman'],
+    },
+    {
+      title: 'Workflow',
+      items: [
+        'Docker',
+        'Figma',
+        'Git',
+        'GitHub',
+        'Visual Studio Code',
+        'IntelliJ IDEA',
+        'CLion',
+        'ChatGPT',
+        'Claude',
+        'Gemini',
+      ],
+    },
+  ],
+} as const
+
+const infoPageText = {
+  en: {
+    heroTitleLineA: 'Work, Study',
+    heroTitleLineB: '& Skills',
+    heroCopy:
+      'I design and build digital products with a strong focus on clarity, motion and structure. This page maps the path from my bachelor studies to current project work.',
+    milestonesTitle: '[MILESTONES]',
+    skillsetTitle: '[SKILLSET]',
   },
-  {
-    title: 'Backend & Processing',
-    items: ['Node.js', 'Sharp', 'REST API', 'Spring'],
+  de: {
+    heroTitleLineA: 'Arbeit, Studium',
+    heroTitleLineB: '& Skills',
+    heroCopy:
+      'Ich konzipiere und entwickle digitale Produkte mit starkem Fokus auf Klarheit, Bewegung und Struktur. Diese Seite zeigt meinen Weg vom Bachelorstudium bis zur aktuellen Projektarbeit.',
+    milestonesTitle: '[MEILENSTEINE]',
+    skillsetTitle: '[SKILLSET]',
   },
-  {
-    title: 'Languages & Platforms',
-    items: ['Kotlin', 'Java', 'C', 'Postman'],
-  },
-  {
-    title: 'Workflow',
-    items: [
-      'Docker',
-      'Figma',
-      'Git',
-      'GitHub',
-      'Visual Studio Code',
-      'IntelliJ IDEA',
-      'CLion',
-      'ChatGPT',
-      'Claude',
-      'Gemini',
-    ],
-  },
-]
+} as const
 
 const RIVER_TOP_PADDING = 130
 const RIVER_BOTTOM_PADDING = 180
@@ -144,15 +255,19 @@ function buildRiverPath(points: Array<{ x: number; y: number }>) {
 }
 
 function InfoPage() {
+  const { language } = useSiteLanguage()
   const riverSectionRef = useRef<HTMLElement | null>(null)
+  const riverStations = useMemo(() => RIVER_STATIONS_BY_LANGUAGE[language], [language])
+  const skillLanes = SKILL_LANES_BY_LANGUAGE[language]
+  const text = infoPageText[language]
   const riverPoints = useMemo(
     () =>
-      RIVER_STATIONS.map((station, index) => ({
+      riverStations.map((station, index) => ({
         station,
         x: RIVER_CENTER_X + station.offset * RIVER_X_SCALE,
         y: RIVER_TOP_PADDING + index * RIVER_STEP + (RIVER_Y_JITTERS[index] ?? 0),
       })),
-    [],
+    [riverStations],
   )
 
   const riverHeight = useMemo(
@@ -265,18 +380,15 @@ function InfoPage() {
       <section className="info-section info-section--hero">
         <div className="info-hero">
           <h1 className="info-hero__title">
-            Work, Study <span>& Skills</span>
+            {text.heroTitleLineA} <span>{text.heroTitleLineB}</span>
           </h1>
-          <p className="info-hero__copy">
-            I design and build digital products with a strong focus on clarity, motion and structure.
-            This page maps the path from my bachelor studies to current project work.
-          </p>
+          <p className="info-hero__copy">{text.heroCopy}</p>
         </div>
       </section>
 
       <section ref={riverSectionRef} className="info-section info-section--river">
         <header className="info-river-header">
-          <h2 className="info-river-header__title">[MILESTONES]</h2>
+          <h2 className="info-river-header__title">{text.milestonesTitle}</h2>
         </header>
 
         <div className="info-river-track" style={{ '--river-height': `${riverHeight}px` } as CSSProperties}>
@@ -322,11 +434,11 @@ function InfoPage() {
 
       <section className="info-section info-section--skills">
         <header className="info-skills-header">
-          <h2 className="info-skills-header__title">[SKILLSET]</h2>
+          <h2 className="info-skills-header__title">{text.skillsetTitle}</h2>
         </header>
 
         <div className="info-skills-lanes">
-          {SKILL_LANES.map((lane, laneIndex) => (
+          {skillLanes.map((lane, laneIndex) => (
             <article
               key={lane.title}
               className="info-skills-lane"

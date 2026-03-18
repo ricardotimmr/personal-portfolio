@@ -6,7 +6,13 @@ import ProjectDetailMinimap from '../components/sections/ProjectDetail/ProjectDe
 import ProjectDetailNarrative from '../components/sections/ProjectDetail/ProjectDetailNarrative'
 import { useProjectDetailMinimap } from '../components/sections/ProjectDetail/useProjectDetailMinimap'
 import { normalizeWheelDeltaToPixels } from '../components/navigation/SmoothScroll/normalizeWheelDelta'
-import { getProjectBySlug, PROJECTS } from '../data/projects'
+import {
+  getLocalizedProjectStringList,
+  getLocalizedProjectText,
+  getProjectBySlug,
+  PROJECTS,
+} from '../data/projects'
+import { useSiteLanguage } from '../context/LanguageContext'
 import './ProjectDetailPage.css'
 
 type BoundaryDirection = 'prev' | 'next'
@@ -30,6 +36,7 @@ type ProjectDetailPageProps = {
 }
 
 function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPageProps) {
+  const { language } = useSiteLanguage()
   const { projectSlug = '' } = useParams()
   const navigate = useNavigate()
   const project = getProjectBySlug(projectSlug)
@@ -244,6 +251,17 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
     return <Navigate to="/work" replace />
   }
 
+  const projectTitle = getLocalizedProjectText(project.title, language)
+  const projectDescription = getLocalizedProjectText(project.description, language)
+  const projectRoles = getLocalizedProjectStringList(project.roles, language)
+  const scrollToPreviousText =
+    language === 'de' ? 'nach oben zum vorherigen projekt scrollen' : 'scroll up to previous project'
+  const scrollToNextText =
+    language === 'de' ? 'nach unten zum naechsten projekt scrollen' : 'scroll down for next project'
+  const legalNavigationLabel = language === 'de' ? 'Rechtliches' : 'Legal'
+  const privacyLabel = language === 'de' ? 'Datenschutz' : 'Privacy Policy'
+  const legalNoticeLabel = language === 'de' ? 'Impressum' : 'Legal Notice'
+
   const bottomTextProgress = Math.min(1, edgeProgress / 0.25)
   const bottomLineProgress = edgeProgress <= 0.25 ? 0 : Math.min(1, (edgeProgress - 0.25) / 0.75)
   const edgeDimOpacity = edgeDirection
@@ -273,13 +291,13 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
             style={{ '--edge-progress': edgeProgress.toFixed(3) } as CSSProperties}
             aria-hidden={edgeDirection !== 'prev'}
           >
-            <span className="project-edge-hint__fill">scroll up to previous project</span>
+            <span className="project-edge-hint__fill">{scrollToPreviousText}</span>
           </p>
 
           <ProjectDetailHeader
-            title={project.title}
-            description={project.description}
-            roles={project.roles}
+            title={projectTitle}
+            description={projectDescription}
+            roles={projectRoles}
             visitUrl={project.visitUrl}
           />
 
@@ -297,7 +315,7 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
               className="project-edge-hint project-edge-hint--bottom"
               style={{ '--edge-progress': bottomTextProgress.toFixed(3) } as CSSProperties}
             >
-              <span className="project-edge-hint__fill">scroll down for next project</span>
+              <span className="project-edge-hint__fill">{scrollToNextText}</span>
             </p>
             <span className="project-edge-line" aria-hidden="true">
               <span
@@ -307,15 +325,15 @@ function ProjectDetailPage({ isPageTransitioning = false }: ProjectDetailPagePro
             </span>
           </div>
         </section>
-        <nav className="project-detail-legal" aria-label="Legal">
+        <nav className="project-detail-legal" aria-label={legalNavigationLabel}>
           <Link className="project-detail-legal__link" to="/privacy-policy">
-            Datenschutz
+            {privacyLabel}
           </Link>
           <span className="project-detail-legal__divider" aria-hidden="true">
             ·
           </span>
           <Link className="project-detail-legal__link" to="/legal-notice">
-            Impressum
+            {legalNoticeLabel}
           </Link>
         </nav>
       </div>
