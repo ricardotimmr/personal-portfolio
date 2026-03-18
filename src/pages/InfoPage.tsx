@@ -109,17 +109,6 @@ const RIVER_X_SCALE = 11.8
 const RIVER_STATION_REVEAL_LAG_PX = -42
 const RIVER_Y_JITTERS = [0, 34, -26, 18, -41, 29, -12]
 
-function supportsMaskReveal() {
-  if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
-    return false
-  }
-
-  return (
-    CSS.supports('mask-image', 'linear-gradient(#000, transparent)') ||
-    CSS.supports('-webkit-mask-image', 'linear-gradient(#000, transparent)')
-  )
-}
-
 function supportsClipPathReveal() {
   if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
     return false
@@ -183,11 +172,8 @@ function InfoPage() {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const stationRevealYPositions = riverPoints.map(({ y }) => y)
-    const hasMaskSupport = supportsMaskReveal()
     const hasClipPathSupport = supportsClipPathReveal()
-    const canUseClipFallback = !hasMaskSupport && hasClipPathSupport
-    const canAnimateReveal = hasMaskSupport || canUseClipFallback
-    trackElement.classList.toggle('info-river-track--clip-fallback', canUseClipFallback)
+    trackElement.classList.toggle('info-river-track--clip-reveal', hasClipPathSupport)
 
     const setRevealState = (progress: number, trackHeight: number) => {
       const clampedProgress = clamp01(progress)
@@ -199,7 +185,7 @@ function InfoPage() {
       )
     }
     const resetRevealState = () => {
-      trackElement.classList.remove('info-river-track--clip-fallback')
+      trackElement.classList.remove('info-river-track--clip-reveal')
       trackElement.style.removeProperty('--river-progress')
       trackElement.style.removeProperty('--river-reveal-cutoff-px')
     }
@@ -213,7 +199,7 @@ function InfoPage() {
       }
     }
 
-    if (!canAnimateReveal) {
+    if (!hasClipPathSupport) {
       const fallbackHeight = Math.max(trackElement.getBoundingClientRect().height, trackElement.offsetHeight)
       setRevealState(1, fallbackHeight)
       stationElements.forEach((stationElement) => stationElement.classList.add('is-visible'))

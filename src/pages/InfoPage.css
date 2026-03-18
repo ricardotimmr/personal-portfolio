@@ -85,6 +85,25 @@
   --river-reveal-cutoff-px: 0px;
 }
 
+.info-river-track::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--river-reveal-cutoff-px) - 34px);
+  height: 68px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.18) 28%,
+    rgba(255, 255, 255, 0.62) 62%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+  opacity: 0;
+}
+
 .info-river-track__svg {
   position: absolute;
   inset: 0;
@@ -92,35 +111,17 @@
   height: 100%;
   pointer-events: none;
   overflow: visible;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0,
-    #000 calc(var(--river-reveal-cutoff-px) - 26px),
-    rgba(0, 0, 0, 0.72) calc(var(--river-reveal-cutoff-px) - 10px),
-    rgba(0, 0, 0, 0.26) calc(var(--river-reveal-cutoff-px) + 8px),
-    transparent calc(var(--river-reveal-cutoff-px) + 26px)
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0,
-    #000 calc(var(--river-reveal-cutoff-px) - 26px),
-    rgba(0, 0, 0, 0.72) calc(var(--river-reveal-cutoff-px) - 10px),
-    rgba(0, 0, 0, 0.26) calc(var(--river-reveal-cutoff-px) + 8px),
-    transparent calc(var(--river-reveal-cutoff-px) + 26px)
-  );
-  will-change: -webkit-mask-image, mask-image;
+  will-change: clip-path;
 }
 
-.info-river-track.info-river-track--clip-fallback .info-river-track__svg {
-  -webkit-mask-image: none;
-  mask-image: none;
+.info-river-track.info-river-track--clip-reveal .info-river-track__svg {
   -webkit-clip-path: inset(0 0 calc((1 - var(--river-progress)) * 100%) 0);
   clip-path: inset(0 0 calc((1 - var(--river-progress)) * 100%) 0);
   will-change: clip-path;
+}
+
+.info-river-track.info-river-track--clip-reveal::after {
+  opacity: clamp(0, calc(1 - var(--river-progress)), 1);
 }
 
 .info-river-path {

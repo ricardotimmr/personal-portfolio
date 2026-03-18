@@ -95,7 +95,7 @@ describe('isSafariBrowser', () => {
 })
 
 describe('shouldUsePageTransitionPerformanceFallback', () => {
-  it('enables fallback for Windows Chromium browsers', () => {
+  it('keeps fallback disabled for Windows Chromium browsers', () => {
     setNavigatorStub({
       userAgent:
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
@@ -106,7 +106,7 @@ describe('shouldUsePageTransitionPerformanceFallback', () => {
       },
     })
 
-    expect(shouldUsePageTransitionPerformanceFallback()).toBe(true)
+    expect(shouldUsePageTransitionPerformanceFallback()).toBe(false)
   })
 
   it('enables fallback for Safari', () => {
