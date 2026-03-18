@@ -138,6 +138,43 @@ test('gallery interaction marker opens when hovering centered card', async ({ pa
     .toContain('gallery-center-action--open')
 })
 
+test.describe('mobile gallery', () => {
+  test.use({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  })
+
+  test('gallery opens the centered project from touch input', async ({ page }) => {
+    await page.goto('/')
+
+    const viewport = page.locator('.gallery-slider-viewport')
+    await viewport.scrollIntoViewIfNeeded()
+    const bounds = await viewport.boundingBox()
+    expect(bounds).not.toBeNull()
+
+    const centerX = (bounds?.x ?? 0) + (bounds?.width ?? 0) / 2
+    const centerY = (bounds?.y ?? 0) + (bounds?.height ?? 0) / 2
+
+    const centeredProjectSlug = await viewport.evaluate((element) => {
+      const rect = element.getBoundingClientRect()
+      const centeredCard = document
+        .elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+        ?.closest('.gallery-card') as HTMLElement | null
+
+      return centeredCard?.dataset.projectSlug ?? null
+    })
+    expect(centeredProjectSlug).not.toBeNull()
+
+    await page.touchscreen.tap(centerX, centerY)
+    await expect(page).toHaveURL(/\/$/)
+
+    await page.waitForTimeout(700)
+    await page.touchscreen.tap(centerX, centerY)
+    await expect(page).toHaveURL(new RegExp(`/work/${centeredProjectSlug}$`))
+  })
+})
+
 test('footer contact overlay opens and closes with escape', async ({ page }) => {
   await page.goto('/info')
 
