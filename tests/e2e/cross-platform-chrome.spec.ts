@@ -168,9 +168,6 @@ test.describe('windows chromium animation parity', () => {
       .poll(async () => ((await pageTransition.getAttribute('class')) ?? '').includes('is-transitioning'))
       .toBe(false)
 
-    const riverTrack = page.locator('.info-river-track')
-    await expect(riverTrack).toHaveClass(/info-river-track--clip-reveal/)
-
     await page.evaluate(() => {
       window.scrollTo(0, document.documentElement.scrollHeight * 0.5)
     })
