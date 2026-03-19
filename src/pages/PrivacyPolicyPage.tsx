@@ -107,34 +107,30 @@ function PrivacyPolicyPage() {
                 <section className="legal-page__section">
                   <h2 className="legal-page__heading">3. Google Fonts</h2>
                   <p className="legal-page__text">
-                    Auf dieser Website werden Google Fonts verwendet, die von Google bereitgestellt werden.
+                    Die auf dieser Website verwendeten Schriftarten werden lokal auf dem Server gehostet.
                   </p>
                   <p className="legal-page__text">
-                    Anbieter:
-                    <br />
-                    Google Ireland Limited
-                    <br />
-                    Gordon House, Barrow Street
-                    <br />
-                    Dublin 4, Irland
+                    Beim Aufruf der Seiten werden keine Schriftarten von Drittanbietern (z. B. Google Fonts CDN)
+                    nachgeladen.
                   </p>
                   <p className="legal-page__text">
-                    Beim Aufruf einer Seite lädt Ihr Browser die benötigten Schriftarten direkt von Google-Servern.
-                    Dabei wird Ihre IP-Adresse an Google übermittelt.
-                  </p>
-                  <p className="legal-page__text">
-                    Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer einheitlichen und
-                    ansprechenden Darstellung).
+                    Dadurch wird keine IP-Adresse allein zum Laden von Schriftarten an Google übermittelt.
                   </p>
                   <p className="legal-page__text">
                     Weitere Informationen:{' '}
-                    <a className="legal-page__link" href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="legal-page__link"
+                      href="https://policies.google.com/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      referrerPolicy="no-referrer"
+                    >
                       https://policies.google.com/privacy
                     </a>
                   </p>
                   <p className="legal-page__text">
-                    Hinweis: Um eine Übertragung personenbezogener Daten an Google zu vermeiden, können Schriftarten
-                    lokal auf dem Server gehostet werden.
+                    Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer datensparsamen und
+                    konsistenten Darstellung).
                   </p>
                 </section>
 
@@ -183,7 +179,13 @@ function PrivacyPolicyPage() {
                     <br />
                     40213 Düsseldorf
                     <br />
-                    <a className="legal-page__link" href="https://www.ldi.nrw.de" target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="legal-page__link"
+                      href="https://www.ldi.nrw.de"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      referrerPolicy="no-referrer"
+                    >
                       https://www.ldi.nrw.de
                     </a>
                   </p>
@@ -250,33 +252,29 @@ function PrivacyPolicyPage() {
                 <section className="legal-page__section">
                   <h2 className="legal-page__heading">3. Google Fonts</h2>
                   <p className="legal-page__text">
-                    This website uses Google Fonts provided by Google.
+                    Fonts used on this website are hosted locally on the server.
                   </p>
                   <p className="legal-page__text">
-                    Provider:
-                    <br />
-                    Google Ireland Limited
-                    <br />
-                    Gordon House, Barrow Street
-                    <br />
-                    Dublin 4, Ireland
+                    No third-party font CDN requests (for example Google Fonts CDN) are made when loading pages.
                   </p>
                   <p className="legal-page__text">
-                    When opening a page, your browser loads required fonts directly from Google servers. In that
-                    process, your IP address is transmitted to Google.
-                  </p>
-                  <p className="legal-page__text">
-                    Legal basis: Art. 6 para. 1 lit. f GDPR (legitimate interest in consistent and appealing
-                    presentation).
+                    This prevents transmitting your IP address to Google solely for font delivery.
                   </p>
                   <p className="legal-page__text">
                     More information:{' '}
-                    <a className="legal-page__link" href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="legal-page__link"
+                      href="https://policies.google.com/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      referrerPolicy="no-referrer"
+                    >
                       https://policies.google.com/privacy
                     </a>
                   </p>
                   <p className="legal-page__text">
-                    Note: To avoid transmission of personal data to Google, fonts can be hosted locally on the server.
+                    Legal basis: Art. 6 para. 1 lit. f GDPR (legitimate interest in privacy-preserving and consistent
+                    presentation).
                   </p>
                 </section>
 
@@ -325,7 +323,13 @@ function PrivacyPolicyPage() {
                     <br />
                     40213 Dusseldorf
                     <br />
-                    <a className="legal-page__link" href="https://www.ldi.nrw.de" target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="legal-page__link"
+                      href="https://www.ldi.nrw.de"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      referrerPolicy="no-referrer"
+                    >
                       https://www.ldi.nrw.de
                     </a>
                   </p>
