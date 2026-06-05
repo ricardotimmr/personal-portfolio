@@ -51,12 +51,6 @@ function LegalNoticePage() {
                   <h2 className="legal-page__heading">Information according to Section 5 TMG</h2>
                   <p className="legal-page__text">
                     Ricardo Timm
-                    <br />
-                    Hauptstraße 15
-                    <br />
-                    51674 Wiehl
-                    <br />
-                    Germany
                   </p>
                   <p className="legal-page__text">
                     E-Mail: ricardo.timmr@gmail.com
@@ -70,7 +64,7 @@ function LegalNoticePage() {
                   <p className="legal-page__text">
                     Ricardo Timm
                     <br />
-                    Address as above
+                    E-Mail: ricardo.timmr@gmail.com
                   </p>
                 </section>
 
@@ -115,12 +109,6 @@ function LegalNoticePage() {
                   <h2 className="legal-page__heading">Angaben gemäß § 5 TMG</h2>
                   <p className="legal-page__text">
                     Ricardo Timm
-                    <br />
-                    Hauptstraße 15
-                    <br />
-                    51674 Wiehl
-                    <br />
-                    Deutschland
                   </p>
                   <p className="legal-page__text">
                     E-Mail: ricardo.timmr@gmail.com
@@ -134,7 +122,7 @@ function LegalNoticePage() {
                   <p className="legal-page__text">
                     Ricardo Timm
                     <br />
-                    Anschrift wie oben
+                    E-Mail: ricardo.timmr@gmail.com
                   </p>
                 </section>
 

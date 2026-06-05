@@ -38,7 +38,7 @@ const RIVER_STATIONS: RiverStation[] = [
   },
   {
     id: 'shrinkify',
-    year: '10/2024',
+    year: '10/2024 - 03/2025',
     title: 'Shrinkify (TH Koeln Entwicklungsprojekt)',
     detail:
       'Team project building a CMS-oriented image optimization app with admin/upload flow and modular interface architecture.',
@@ -46,15 +46,15 @@ const RIVER_STATIONS: RiverStation[] = [
   },
   {
     id: 'varia',
-    year: '04/2025',
+    year: '04/2025 - 09/2025',
     title: 'Varia Praxisprojekt (TH Koeln)',
     detail:
-      'Ongoing practical project for interactive, CI-consistent product modules with strong UX/UI and reusable frontend patterns.',
+      'Practical project for interactive, CI-consistent product modules with strong UX/UI and reusable frontend patterns.',
     offset: -31,
   },
   {
     id: 'ferchau',
-    year: '11/2025',
+    year: '11/2025 - 06/2026',
     title: 'FERCHAU - Compliance & Legal',
     detail:
       'Working student role supporting compliance operations and privacy/data-protection topics across company processes.',
@@ -62,10 +62,18 @@ const RIVER_STATIONS: RiverStation[] = [
   },
   {
     id: 'uiux-frontend',
-    year: 'Now',
+    year: 'Ongoing',
     title: 'UI/UX + Frontend Development Track',
     detail:
       'Building and documenting product-focused interfaces in real projects, with practical coding work visible on GitHub.',
+    offset: 31,
+  },
+  {
+    id: 'ferchau-portal-management',
+    year: '06/2026 - Now',
+    title: 'FERCHAU - Junior Consultant Portal Management',
+    detail:
+      'Consulting role focused on FEM portal concepts, development support, daily operations, testing, documentation and data-driven stakeholder decisions.',
     offset: -22,
   },
 ]
@@ -107,7 +115,7 @@ const RIVER_VIEWBOX_WIDTH = 1000
 const RIVER_CENTER_X = RIVER_VIEWBOX_WIDTH * 0.5
 const RIVER_X_SCALE = 11.8
 const RIVER_STATION_REVEAL_LAG_PX = -42
-const RIVER_Y_JITTERS = [0, 34, -26, 18, -41, 29, -12]
+const RIVER_Y_JITTERS = [0, 34, -26, 18, -41, 29, -18, -12]
 
 function supportsMaskReveal() {
   if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {

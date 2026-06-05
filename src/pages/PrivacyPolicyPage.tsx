@@ -58,12 +58,6 @@ function PrivacyPolicyPage() {
                     <br />
                     Ricardo Timm
                     <br />
-                    Hauptstraße 15
-                    <br />
-                    51674 Wiehl
-                    <br />
-                    Deutschland
-                    <br />
                     E-Mail: ricardo.timmr@gmail.com
                   </p>
                 </section>
@@ -203,12 +197,6 @@ function PrivacyPolicyPage() {
                     Controller under GDPR:
                     <br />
                     Ricardo Timm
-                    <br />
-                    Hauptstraße 15
-                    <br />
-                    51674 Wiel
-                    <br />
-                    Germany
                     <br />
                     Email: ricardo.timmr@gmail.com
                   </p>
